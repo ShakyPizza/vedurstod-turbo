@@ -457,10 +457,69 @@ body {
   text-transform: uppercase;
 }
 
+.obs__right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
 .readouts {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.readouts--sub {
+  grid-template-columns: 1fr 1fr;
+}
+
+.readouts--sub > :nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.readout--hero {
+  gap: 6px;
+}
+
+.readout--hero .readout__label {
+  font-size: 13px;
+  letter-spacing: 0.3em;
+}
+
+.readout__screen--hero {
+  padding: 18px 22px 22px;
+  min-height: 150px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+}
+
+.readout__screen--hero .readout__value {
+  font-size: 128px;
+  line-height: 0.85;
+  text-shadow:
+    0 0 12px var(--crt-amber-dim),
+    0 0 28px rgba(245, 166, 35, 0.35);
+}
+
+.readout__screen--hero .readout__unit {
+  font-size: 18px;
+  letter-spacing: 0.22em;
+  align-self: flex-start;
+  padding-top: 18px;
+}
+
+@media (max-width: 800px) {
+  .readout__screen--hero .readout__value {
+    font-size: 84px;
+  }
+  .readouts--sub {
+    grid-template-columns: 1fr;
+  }
+  .readouts--sub > :nth-child(3) {
+    grid-column: auto;
+  }
 }
 
 .readout {
@@ -576,6 +635,52 @@ body {
   color: var(--crt-green);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
+}
+
+.forecast__sky {
+  width: 36px;
+  height: 36px;
+  padding: 3px;
+  background: radial-gradient(circle at 50% 30%, #0a1a0a 0%, #020504 100%);
+  border: 1px solid #0a0a0a;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 2px 3px #000,
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.sky-symbol {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sky-symbol__bg {
+  fill: transparent;
+}
+
+.sky-symbol__dot {
+  fill: #132115;
+}
+
+.sky-symbol__dot--on {
+  fill: #cff1a6;
+  filter: drop-shadow(0 0 1.2px rgba(139, 232, 120, 0.85));
+}
+
+.sky-symbol--clear .sky-symbol__dot--on,
+.sky-symbol--partly .sky-symbol__dot--on {
+  fill: #f5e08a;
+  filter: drop-shadow(0 0 1.2px rgba(245, 224, 138, 0.9));
+}
+
+.sky-symbol--thunder .sky-symbol__dot--on {
+  fill: #f5c24a;
+  filter: drop-shadow(0 0 1.4px rgba(245, 194, 74, 0.9));
 }
 
 .forecast__time {
@@ -792,6 +897,46 @@ body {
 }
 
 /* ================ Moon panel ================ */
+
+.moon__countdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.moon__countdown-cell {
+  background: radial-gradient(circle at 50% 30%, #241a08 0%, #0a0503 100%);
+  border: 1px solid var(--bezel-lo);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 2px 4px #000,
+    inset 0 -1px 0 #3a2f18;
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.moon__countdown-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--label-dim);
+}
+
+.moon__countdown-value {
+  font-family: 'VT323', monospace;
+  color: var(--crt-amber);
+  text-shadow: 0 0 8px var(--crt-amber-dim);
+  letter-spacing: 0.02em;
+  font-size: clamp(28px, 5.2vw, 46px);
+  line-height: 1;
+  white-space: nowrap;
+}
 
 .panel__body--moon {
   display: grid;

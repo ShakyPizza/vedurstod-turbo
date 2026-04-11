@@ -46,16 +46,6 @@ function nextPhaseDate(from: Date, target: 0 | 0.5): Date {
   return best!;
 }
 
-const DATE_FMT = new Intl.DateTimeFormat('is-IS', {
-  weekday: 'short',
-  day: '2-digit',
-  month: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-  timeZone: 'Atlantic/Reykjavik',
-});
-
 const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
   hour: '2-digit',
   minute: '2-digit',
@@ -63,13 +53,22 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
   timeZone: 'Atlantic/Reykjavik',
 });
 
+function countdownText(from: Date, to: Date): string {
+  const diff = to.getTime() - from.getTime();
+  if (diff <= 0) return '0d 0h';
+  const totalH = Math.floor(diff / 3600000);
+  const days = Math.floor(totalH / 24);
+  const hours = totalH % 24;
+  return `${days}d ${hours.toString().padStart(2, '0')}h`;
+}
+
 export function moonPanel(): Panel {
   let orbLit: SVGElement;
   let orbDisk: SVGElement;
   let nameEl: HTMLElement;
   let illumEl: HTMLElement;
-  let nextNewEl: HTMLElement;
-  let nextFullEl: HTMLElement;
+  let nextNewCountEl: HTMLElement;
+  let nextFullCountEl: HTMLElement;
   let riseEl: HTMLElement;
   let setEl: HTMLElement;
   let station = { lat: 64.1542, lon: -22.027 };
@@ -85,6 +84,25 @@ export function moonPanel(): Panel {
         'header',
         { class: 'panel__header' },
         el('h2', { class: 'panel__title' }, 'TUNGL'),
+      );
+
+      nextNewCountEl = el('span', { class: 'moon__countdown-value' }, '—');
+      nextFullCountEl = el('span', { class: 'moon__countdown-value' }, '—');
+      const countdown = el(
+        'div',
+        { class: 'moon__countdown' },
+        el(
+          'div',
+          { class: 'moon__countdown-cell' },
+          el('div', { class: 'moon__countdown-label' }, 'NÆSTA NÝTT'),
+          nextNewCountEl,
+        ),
+        el(
+          'div',
+          { class: 'moon__countdown-cell' },
+          el('div', { class: 'moon__countdown-label' }, 'NÆSTA FULLT'),
+          nextFullCountEl,
+        ),
       );
 
       const body = el('div', { class: 'panel__body panel__body--moon' });
@@ -130,15 +148,9 @@ export function moonPanel(): Panel {
       nameEl = el('div', { class: 'moon__name' }, 'TUNGL');
       illumEl = el('div', { class: 'moon__illum' }, '— %');
       const stats = el('dl', { class: 'moon__stats' });
-      nextNewEl = el('dd', {}, '—');
-      nextFullEl = el('dd', {}, '—');
       riseEl = el('dd', {}, '—');
       setEl = el('dd', {}, '—');
       stats.append(
-        el('dt', {}, 'NÆSTA NÝTT'),
-        nextNewEl,
-        el('dt', {}, 'NÆSTA FULLT'),
-        nextFullEl,
         el('dt', {}, 'UPPKOMA'),
         riseEl,
         el('dt', {}, 'NIÐURKOMA'),
@@ -147,7 +159,7 @@ export function moonPanel(): Panel {
       info.append(nameEl, illumEl, stats);
 
       body.append(el('div', { class: 'moon__art' }, art), info);
-      root.append(header, body);
+      root.append(header, countdown, body);
     },
     refresh() {
       const now = new Date();
@@ -156,8 +168,8 @@ export function moonPanel(): Panel {
       nameEl.textContent = phaseName(illum.phase).toUpperCase();
       illumEl.textContent = `${(illum.fraction * 100).toFixed(0)}% LÝST`;
 
-      nextNewEl.textContent = DATE_FMT.format(nextPhaseDate(now, 0));
-      nextFullEl.textContent = DATE_FMT.format(nextPhaseDate(now, 0.5));
+      nextNewCountEl.textContent = countdownText(now, nextPhaseDate(now, 0));
+      nextFullCountEl.textContent = countdownText(now, nextPhaseDate(now, 0.5));
 
       const times = SunCalc.getMoonTimes(now, station.lat, station.lon, true);
       riseEl.textContent = times.rise ? TIME_FMT.format(times.rise) : '—';

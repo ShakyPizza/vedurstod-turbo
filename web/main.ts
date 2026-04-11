@@ -1,4 +1,5 @@
 import './styles/main.css';
+import SunCalc from 'suncalc';
 
 import type { Panel, PanelContext } from './panels/types.ts';
 import { obsPanel } from './panels/obs.ts';
@@ -58,7 +59,27 @@ function startClock() {
   setInterval(tick, 1000);
 }
 
+function startSunTimes() {
+  const el = document.getElementById('sun-times');
+  if (!el) return;
+  const fmt = new Intl.DateTimeFormat('is-IS', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Atlantic/Reykjavik',
+  });
+  const tick = () => {
+    const t = SunCalc.getTimes(new Date(), ctx.station.lat, ctx.station.lon);
+    const rise = t.sunrise && !Number.isNaN(t.sunrise.getTime()) ? fmt.format(t.sunrise) : '--:--';
+    const set = t.sunset && !Number.isNaN(t.sunset.getTime()) ? fmt.format(t.sunset) : '--:--';
+    el.textContent = `${rise} / ${set}`;
+  };
+  tick();
+  setInterval(tick, 60 * 1000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   mountPanels();
   startClock();
+  startSunTimes();
 });

@@ -216,16 +216,27 @@ export function obsPanel(): Panel {
       const gaugeWrap = el('div', { class: 'panel__gauge' });
       gaugeWrap.append(gauge.root);
 
-      const grid = el(
+      const tempMain = el(
         'div',
-        { class: 'readouts' },
-        buildReadout('HITI', 'obs-temp', '°C'),
+        { class: 'readout readout--hero' },
+        el('span', { class: 'readout__label' }, 'HITI'),
+        el(
+          'div',
+          { class: 'readout__screen readout__screen--hero' },
+          el('span', { class: 'readout__value', id: 'obs-temp' }, '—'),
+          el('span', { class: 'readout__unit' }, '°C'),
+        ),
+      );
+      const subRow = el(
+        'div',
+        { class: 'readouts readouts--sub' },
         buildReadout('DAGGARMARK', 'obs-dew', '°C'),
         buildReadout('RAKASTIG', 'obs-rh', '%'),
         buildReadout('LOFTÞRÝSTINGUR', 'obs-pressure', 'hPa'),
       );
+      const right = el('div', { class: 'obs__right' }, tempMain, subRow);
 
-      body.append(gaugeWrap, grid);
+      body.append(gaugeWrap, right);
 
       stationLabel = el('span', { class: 'panel__footer-label' }, ctx.station.name.toUpperCase());
       timestampLabel = el('span', { class: 'panel__footer-value', id: 'obs-ts' }, '—');
