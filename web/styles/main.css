@@ -408,8 +408,6 @@ body {
 }
 
 .wind-gauge__needle {
-  transform-box: fill-box;
-  transform-origin: center;
   transition: transform 1.2s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -638,8 +636,8 @@ body {
 }
 
 .forecast__sky {
-  width: 36px;
-  height: 36px;
+  width: 46px;
+  height: 46px;
   padding: 3px;
   background: radial-gradient(circle at 50% 30%, #0a1a0a 0%, #020504 100%);
   border: 1px solid #0a0a0a;
