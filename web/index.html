@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="is">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a1614" />
+    <title>Veðurstöð Turbo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=VT323&family=Oswald:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <div id="console" class="console">
+      <header class="console__header">
+        <div class="console__brand">
+          <span class="console__brand-line">VEÐURSTÖÐ</span>
+          <span class="console__brand-line console__brand-line--big">TURBO</span>
+        </div>
+        <div class="console__meta">
+          <span class="console__meta-label">STÖÐ</span>
+          <span class="console__meta-value" id="station-name">SELTJARNARNES&nbsp;SUÐURNES</span>
+          <span class="console__meta-label">KL.</span>
+          <span class="console__meta-value" id="clock">--:--:--</span>
+        </div>
+      </header>
+      <main class="console__grid">
+        <section class="panel panel--obs" data-panel="obs"></section>
+        <section class="panel panel--forecast" data-panel="forecast"></section>
+        <section class="panel panel--warnings" data-panel="warnings"></section>
+        <section class="panel panel--moon" data-panel="moon"></section>
+        <section class="panel panel--placeholder" data-panel="tides"></section>
+        <section class="panel panel--placeholder" data-panel="quakes"></section>
+        <section class="panel panel--placeholder" data-panel="traffic"></section>
+      </main>
+      <footer class="console__footer">
+        <span class="console__footer-slug">VEÐURSTOFA&nbsp;ÍSLANDS · STÖÐ&nbsp;1471</span>
+        <span class="console__footer-slug" id="build-slug">v0.1</span>
+      </footer>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

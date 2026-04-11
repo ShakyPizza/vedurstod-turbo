@@ -1,0 +1,12 @@
+[Unit]
+Description=Poll git origin every minute for Veðurstöð Turbo deploys
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+AccuracySec=5s
+Persistent=true
+Unit=vedurstod-turbo-deploy.service
+
+[Install]
+WantedBy=timers.target
