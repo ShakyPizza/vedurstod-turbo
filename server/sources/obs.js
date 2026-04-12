@@ -1,15 +1,16 @@
 import { cached } from '../cache.js';
-import { fetchXml, num, parseVedurTime, STATION_ID, STATION_NAME } from './vedur.js';
+import { fetchXml, num, parseVedurTime } from './vedur.js';
+import { DEFAULT_STATION } from '../config.js';
 
 const TTL = 10 * 60 * 1000;
 
-async function load() {
+async function load(stationId) {
   const data = await fetchXml({
     op_w: 'xml',
     type: 'obs',
     lang: 'is',
     view: 'xml',
-    ids: String(STATION_ID),
+    ids: String(stationId),
     params: 'T;F;FX;FG;D;R;RH;P;N;TD;V',
     time: '1h',
   });
@@ -19,8 +20,8 @@ async function load() {
   if (!s) throw new Error('no station data');
 
   return {
-    stationId: STATION_ID,
-    stationName: String(s.name ?? STATION_NAME),
+    stationId,
+    stationName: String(s.name ?? `stöð ${stationId}`),
     observedAt: parseVedurTime(s.time),
     fetchedAt: new Date().toISOString(),
     temperature: num(s.T),
@@ -39,6 +40,6 @@ async function load() {
   };
 }
 
-export function getObservation() {
-  return cached('obs', TTL, load);
+export function getObservation(stationId = DEFAULT_STATION.id) {
+  return cached(`obs:${stationId}`, TTL, () => load(stationId));
 }

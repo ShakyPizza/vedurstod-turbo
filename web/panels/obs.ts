@@ -192,12 +192,12 @@ export function obsPanel(): Panel {
   let stationLabel: HTMLElement;
   let timestampLabel: HTMLElement;
   let statusLamp: HTMLElement;
-  let apiBase = '/api';
+  let obsUrl = '/api/obs';
 
   return {
     intervalMs: 15 * 60 * 1000,
     mount(el_root, ctx) {
-      apiBase = ctx.apiBase;
+      obsUrl = ctx.apiUrl('obs');
       root = el_root;
       root.innerHTML = '';
 
@@ -254,7 +254,7 @@ export function obsPanel(): Panel {
     async refresh() {
       if (!gauge) return;
       try {
-        const data = await getJson<Obs>(`${apiBase}/obs`);
+        const data = await getJson<Obs>(obsUrl);
         statusLamp.classList.add('status-lamp--on');
         statusLamp.classList.remove('status-lamp--alert');
 

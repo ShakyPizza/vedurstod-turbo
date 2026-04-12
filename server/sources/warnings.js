@@ -1,10 +1,8 @@
 import { cached } from '../cache.js';
+import { DEFAULT_STATION } from '../config.js';
 
 const TTL = 2 * 60 * 1000;
 const WARNINGS_URL = 'https://www.vedur.is/vedur/vidvaranir/';
-
-export const STATION_LAT = 64.1542;
-export const STATION_LON = -22.0270;
 
 function extractDataBlock(html) {
   const needle = "'data':";
@@ -85,7 +83,7 @@ function pickEventCode(info, name) {
   return hit ? hit.value : null;
 }
 
-async function load() {
+async function load(lat, lon) {
   const res = await fetch(WARNINGS_URL, {
     headers: { 'user-agent': 'vedurstod-turbo/0.1 (+tailnet personal dashboard)' },
   });
@@ -127,7 +125,7 @@ async function load() {
     });
 
     const covers = areas.some((a) =>
-      a.polygons.some((ring) => pointInPolygon(STATION_LAT, STATION_LON, ring)),
+      a.polygons.some((ring) => pointInPolygon(lat, lon, ring)),
     );
 
     shaped.push({
@@ -163,6 +161,7 @@ async function load() {
   };
 }
 
-export function getWarnings() {
-  return cached('warnings', TTL, load);
+export function getWarnings(lat = DEFAULT_STATION.lat, lon = DEFAULT_STATION.lon) {
+  const key = `warnings:${lat.toFixed(4)}:${lon.toFixed(4)}`;
+  return cached(key, TTL, () => load(lat, lon));
 }

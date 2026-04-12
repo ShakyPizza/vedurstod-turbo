@@ -86,12 +86,12 @@ export function warningsPanel(): Panel {
   let otherBody: HTMLElement;
   let countLabel: HTMLElement;
   let masterLamp: HTMLElement;
-  let apiBase = '/api';
+  let warningsUrl = '/api/warnings';
 
   return {
     intervalMs: 5 * 60 * 1000,
     mount(el_root, ctx) {
-      apiBase = ctx.apiBase;
+      warningsUrl = ctx.apiUrl('warnings');
       root = el_root;
       root.innerHTML = '';
 
@@ -124,7 +124,7 @@ export function warningsPanel(): Panel {
     },
     async refresh() {
       try {
-        const data = await getJson<WarningsResponse>(`${apiBase}/warnings`);
+        const data = await getJson<WarningsResponse>(warningsUrl);
         const total = data.nearby.length + data.other.length;
         countLabel.textContent = String(total);
 

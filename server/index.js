@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { getObservation } from './sources/obs.js';
 import { getForecast } from './sources/forecast.js';
 import { getWarnings } from './sources/warnings.js';
+import { DEFAULT_STATION, resolveCoord, resolveStationId } from './config.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const DIST_DIR = resolve(__dirname, '..', 'dist');
@@ -67,17 +68,22 @@ async function sendStatic(res, urlPath) {
   }
 }
 
-async function handleApi(req, res, pathname) {
+async function handleApi(req, res, pathname, query) {
   try {
+    const stationId = resolveStationId(query.get('station'));
+    const lat = resolveCoord(query.get('lat'), DEFAULT_STATION.lat);
+    const lon = resolveCoord(query.get('lon'), DEFAULT_STATION.lon);
     switch (pathname) {
       case '/api/obs':
-        return sendJson(res, 200, await getObservation());
+        return sendJson(res, 200, await getObservation(stationId));
       case '/api/forecast':
-        return sendJson(res, 200, await getForecast());
+        return sendJson(res, 200, await getForecast(stationId));
       case '/api/warnings':
-        return sendJson(res, 200, await getWarnings());
+        return sendJson(res, 200, await getWarnings(lat, lon));
       case '/api/health':
         return sendJson(res, 200, { ok: true, ts: new Date().toISOString() });
+      case '/api/station-default':
+        return sendJson(res, 200, DEFAULT_STATION);
       default:
         return sendJson(res, 404, { error: 'unknown endpoint' });
     }
@@ -97,7 +103,7 @@ const server = http.createServer(async (req, res) => {
   }
   const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
   if (url.pathname.startsWith('/api/')) {
-    await handleApi(req, res, url.pathname);
+    await handleApi(req, res, url.pathname, url.searchParams);
     return;
   }
   await sendStatic(res, url.pathname);

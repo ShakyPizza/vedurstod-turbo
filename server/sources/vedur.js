@@ -1,8 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
 
-export const STATION_ID = 1471;
-export const STATION_NAME = 'Seltjarnarnes Suðurnes';
-
 const XML_BASE = 'https://xmlweather.vedur.is/';
 
 const parser = new XMLParser({

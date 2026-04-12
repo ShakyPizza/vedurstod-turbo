@@ -284,12 +284,12 @@ export function forecastPanel(): Panel {
   let body: HTMLElement;
   let statusLamp: HTMLElement;
   let issuedLabel: HTMLElement;
-  let apiBase = '/api';
+  let forecastUrl = '/api/forecast';
 
   return {
     intervalMs: 60 * 60 * 1000,
     mount(el_root, ctx) {
-      apiBase = ctx.apiBase;
+      forecastUrl = ctx.apiUrl('forecast');
       root = el_root;
       root.innerHTML = '';
 
@@ -311,7 +311,7 @@ export function forecastPanel(): Panel {
     },
     async refresh() {
       try {
-        const data = await getJson<Forecast>(`${apiBase}/forecast`);
+        const data = await getJson<Forecast>(forecastUrl);
         statusLamp.classList.add('status-lamp--on');
         statusLamp.classList.remove('status-lamp--alert');
 

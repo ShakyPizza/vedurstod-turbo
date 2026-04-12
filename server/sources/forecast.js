@@ -1,15 +1,16 @@
 import { cached } from '../cache.js';
-import { fetchXml, num, parseVedurTime, STATION_ID, STATION_NAME } from './vedur.js';
+import { fetchXml, num, parseVedurTime } from './vedur.js';
+import { DEFAULT_STATION } from '../config.js';
 
 const TTL = 60 * 60 * 1000;
 
-async function load() {
+async function load(stationId) {
   const data = await fetchXml({
     op_w: 'xml',
     type: 'forec',
     lang: 'is',
     view: 'xml',
-    ids: String(STATION_ID),
+    ids: String(stationId),
   });
 
   const stations = data?.forecasts?.station ?? [];
@@ -19,8 +20,8 @@ async function load() {
   const entries = Array.isArray(s.forecast) ? s.forecast : s.forecast ? [s.forecast] : [];
 
   return {
-    stationId: STATION_ID,
-    stationName: String(s.name ?? STATION_NAME),
+    stationId,
+    stationName: String(s.name ?? `stöð ${stationId}`),
     issuedAt: parseVedurTime(s.atime),
     fetchedAt: new Date().toISOString(),
     steps: entries.map((e) => ({
@@ -33,6 +34,6 @@ async function load() {
   };
 }
 
-export function getForecast() {
-  return cached('forecast', TTL, load);
+export function getForecast(stationId = DEFAULT_STATION.id) {
+  return cached(`forecast:${stationId}`, TTL, () => load(stationId));
 }

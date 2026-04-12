@@ -24,7 +24,10 @@
           <span class="console__meta-label">SÓL</span>
           <span class="console__meta-value" id="sun-times">--:-- / --:--</span>
           <span class="console__meta-label">STÖÐ</span>
-          <span class="console__meta-value" id="station-name">SELTJARNARNES&nbsp;SUÐURNES</span>
+          <button type="button" class="console__station-btn" id="station-btn" title="Breyta stöð">
+            <span class="console__meta-value" id="station-name">—</span>
+            <span class="console__station-gear" aria-hidden="true">⚙</span>
+          </button>
           <span class="console__meta-label">KL.</span>
           <span class="console__meta-value" id="clock">--:--:--</span>
         </div>
@@ -39,10 +42,43 @@
         <section class="panel panel--placeholder" data-panel="traffic"></section>
       </main>
       <footer class="console__footer">
-        <span class="console__footer-slug">VEÐURSTOFA&nbsp;ÍSLANDS · STÖÐ&nbsp;1471</span>
+        <span class="console__footer-slug" id="footer-station">VEÐURSTOFA&nbsp;ÍSLANDS</span>
         <span class="console__footer-slug" id="build-slug">v0.1</span>
       </footer>
     </div>
+
+    <dialog id="station-dialog" class="station-dialog">
+      <form method="dialog" class="station-form" id="station-form">
+        <h3 class="station-form__title">STILLA STÖÐ</h3>
+        <label class="station-form__row">
+          <span>Stöðvanúmer</span>
+          <input name="id" type="number" min="1" step="1" required />
+        </label>
+        <label class="station-form__row">
+          <span>Nafn</span>
+          <input name="name" type="text" required />
+        </label>
+        <label class="station-form__row">
+          <span>Breiddargráða</span>
+          <input name="lat" type="number" step="any" min="-90" max="90" required />
+        </label>
+        <label class="station-form__row">
+          <span>Lengdargráða</span>
+          <input name="lon" type="number" step="any" min="-180" max="180" required />
+        </label>
+        <p class="station-form__help">
+          Stöðvanúmer má finna á
+          <a href="https://xmlweather.vedur.is/" target="_blank" rel="noopener noreferrer">xmlweather.vedur.is</a>
+          (listi yfir sjálfvirkar veðurstöðvar Veðurstofunnar).
+        </p>
+        <menu class="station-form__buttons">
+          <button type="button" value="cancel" id="station-cancel">Hætta við</button>
+          <button type="button" value="reset" id="station-reset">Sjálfgefið</button>
+          <button type="submit" value="save" id="station-save">Vista</button>
+        </menu>
+      </form>
+    </dialog>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

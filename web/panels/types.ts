@@ -1,11 +1,14 @@
+export interface Station {
+  id: number;
+  name: string;
+  lat: number;
+  lon: number;
+}
+
 export interface PanelContext {
   apiBase: string;
-  station: {
-    id: number;
-    name: string;
-    lat: number;
-    lon: number;
-  };
+  station: Station;
+  apiUrl(endpoint: string): string;
 }
 
 export interface Panel {
