@@ -7,3 +7,4 @@ dist/
 !.env.example
 .vite/
 CLAUDE.md
+plan.md
