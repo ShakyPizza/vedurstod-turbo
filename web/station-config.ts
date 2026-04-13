@@ -20,7 +20,13 @@ export function loadStation(): Station {
       typeof parsed?.lat === 'number' &&
       typeof parsed?.lon === 'number'
     ) {
-      return { id: parsed.id, name: parsed.name, lat: parsed.lat, lon: parsed.lon };
+      return {
+        id: parsed.id,
+        name: parsed.name,
+        lat: parsed.lat,
+        lon: parsed.lon,
+        ...(typeof parsed.forecastId === 'number' ? { forecastId: parsed.forecastId } : {}),
+      };
     }
   } catch {
     // fall through

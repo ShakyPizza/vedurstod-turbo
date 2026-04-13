@@ -1,0 +1,17 @@
+services:
+  vedur:
+    build: .
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vedur.rule=Host(`vedur.benediktorri.is`)"
+      - "traefik.http.routers.vedur.entrypoints=websecure"
+      - "traefik.http.routers.vedur.tls=true"
+      - "traefik.http.routers.vedur.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vedur.loadbalancer.server.port=8080"
+
+networks:
+  traefik:
+    external: true

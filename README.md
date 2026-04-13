@@ -34,13 +34,10 @@ Station numbers and coordinates are published by Veðurstofa Íslands at [`xmlwe
 
 ```bash
 npm ci
-
-# terminal 1 — API on :8080
-npm run dev:server
-
-# terminal 2 — Vite on :5173 with /api proxied to :8080
-npm run dev
+npm run dev        # starts both Vite (:5173) and the API server (:8080) together
 ```
+
+Open `http://localhost:5173`. The `/api` proxy is handled by Vite in dev mode.
 
 Or as a single production process:
 
@@ -49,6 +46,40 @@ npm run build
 npm start
 # http://localhost:8080
 ```
+
+## Deploying with Docker + Traefik
+
+The included `docker-compose.yml` builds a multi-stage image and registers it with Traefik via Docker labels. Intended for deployment on a server already running Traefik.
+
+**First-time setup on the server:**
+
+```bash
+git clone <repo> /opt/vedurstod-turbo
+cd /opt/vedurstod-turbo
+docker compose up -d --build
+```
+
+The app will be available at `vedur.benediktorri.is` once Traefik picks up the labels (immediate, no restart needed). Let's Encrypt issues the cert automatically on first request.
+
+**Requirements:**
+- An external Docker network named `traefik` must exist (`docker network create traefik` if it doesn't).
+- Traefik must be configured with a `letsencrypt` cert resolver and the Docker provider enabled.
+
+## Deploying via GitHub Actions (auto-deploy on push)
+
+A self-hosted GitHub Actions runner on the server handles deploys. On every push to `main`, the workflow SSHes into the server and runs:
+
+```bash
+cd /opt/vedurstod-turbo && git pull origin main && docker compose up -d --build vedur
+```
+
+**Setup:**
+
+1. Install a self-hosted runner on the server and register it with the repo (`Settings → Actions → Runners`).
+2. Clone the repo to `/opt/vedurstod-turbo` on the server.
+3. Push to `main` — the workflow in `.github/workflows/deploy.yml` triggers automatically.
+
+No secrets or SSH keys are needed since the runner executes directly on the server.
 
 ## Deploying on a Raspberry Pi
 

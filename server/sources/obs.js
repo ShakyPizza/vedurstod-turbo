@@ -17,7 +17,7 @@ async function load(stationId) {
 
   const stations = data?.observations?.station ?? [];
   const s = Array.isArray(stations) ? stations[0] : stations;
-  if (!s) throw new Error('no station data');
+  if (!s) return { stationId, stationName: `stöð ${stationId}`, observedAt: null, fetchedAt: new Date().toISOString(), temperature: null, dewPoint: null, humidity: null, pressure: null, precipitation: null, cloudCover: null, visibility: null, wind: { speed: null, gust: null, max: null, direction: null } };
 
   return {
     stationId,

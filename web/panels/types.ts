@@ -3,6 +3,7 @@ export interface Station {
   name: string;
   lat: number;
   lon: number;
+  forecastId?: number; // if omitted, falls back to id
 }
 
 export interface PanelContext {

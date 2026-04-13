@@ -72,13 +72,14 @@ async function sendStatic(res, urlPath) {
 async function handleApi(req, res, pathname, query) {
   try {
     const stationId = resolveStationId(query.get('station'));
+    const forecastStationId = resolveStationId(query.get('forecastStation') ?? query.get('station'));
     const lat = resolveCoord(query.get('lat'), DEFAULT_STATION.lat);
     const lon = resolveCoord(query.get('lon'), DEFAULT_STATION.lon);
     switch (pathname) {
       case '/api/obs':
         return sendJson(res, 200, await getObservation(stationId));
       case '/api/forecast':
-        return sendJson(res, 200, await getForecast(stationId));
+        return sendJson(res, 200, await getForecast(forecastStationId));
       case '/api/warnings':
         return sendJson(res, 200, await getWarnings(lat, lon));
       case '/api/textaspa':

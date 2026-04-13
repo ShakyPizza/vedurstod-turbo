@@ -15,7 +15,7 @@ async function load(stationId) {
 
   const stations = data?.forecasts?.station ?? [];
   const s = Array.isArray(stations) ? stations[0] : stations;
-  if (!s) throw new Error('no forecast data');
+  if (!s) return { stationId, stationName: `stöð ${stationId}`, issuedAt: null, fetchedAt: new Date().toISOString(), steps: [] };
 
   const entries = Array.isArray(s.forecast) ? s.forecast : s.forecast ? [s.forecast] : [];
 

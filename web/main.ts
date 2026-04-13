@@ -8,6 +8,7 @@ import { warningsPanel } from './panels/warnings.ts';
 import { moonPanel } from './panels/moon.ts';
 import { placeholderPanel } from './panels/placeholder.ts';
 import { DEFAULT_STATION, clearStation, loadStation, saveStation } from './station-config.ts';
+import STATIONS from './stations.json';
 
 const PANELS: Record<string, () => Panel> = {
   obs: obsPanel,
@@ -27,6 +28,7 @@ function buildContext(station: Station): PanelContext {
     apiUrl(endpoint: string) {
       const params = new URLSearchParams({
         station: String(station.id),
+        forecastStation: String(station.forecastId ?? station.id),
         lat: station.lat.toFixed(6),
         lon: station.lon.toFixed(6),
       });
@@ -100,6 +102,8 @@ function wireStationDialog(current: Station) {
   const reset = document.getElementById('station-reset');
   if (!dialog || !form || !btn) return;
 
+  const stationSelect = document.getElementById('station-select') as HTMLSelectElement | null;
+
   const fill = (s: Station) => {
     (form.elements.namedItem('id') as HTMLInputElement).value = String(s.id);
     (form.elements.namedItem('name') as HTMLInputElement).value = s.name;
@@ -107,13 +111,36 @@ function wireStationDialog(current: Station) {
     (form.elements.namedItem('lon') as HTMLInputElement).value = String(s.lon);
   };
 
+  const syncSelect = (s: Station) => {
+    if (!stationSelect) return;
+    const match = STATIONS.find((st) => st.id === s.id);
+    stationSelect.value = match ? String(match.id) : '';
+  };
+
+  if (stationSelect) {
+    for (const s of STATIONS) {
+      const opt = document.createElement('option');
+      opt.value = String(s.id);
+      opt.textContent = s.name;
+      stationSelect.appendChild(opt);
+    }
+    stationSelect.addEventListener('change', () => {
+      const found = STATIONS.find((s) => String(s.id) === stationSelect.value);
+      if (found) fill(found);
+    });
+  }
+
   btn.addEventListener('click', () => {
     fill(current);
+    syncSelect(current);
     dialog.showModal();
   });
 
   cancel?.addEventListener('click', () => dialog.close('cancel'));
-  reset?.addEventListener('click', () => fill(DEFAULT_STATION));
+  reset?.addEventListener('click', () => {
+    fill(DEFAULT_STATION);
+    syncSelect(DEFAULT_STATION);
+  });
 
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
