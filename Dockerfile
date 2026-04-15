@@ -6,7 +6,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: runtime
+# Stage 2: runtime environment
 FROM node:20-alpine
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
