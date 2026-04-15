@@ -6,6 +6,6 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=%h/vedurstod-turbo
-ExecStart=%h/vedurstod-turbo/scripts/deploy.sh
+ExecStart=%h/vedurstod-turbo/scripts/deploy-pi.sh
 StandardOutput=journal
 StandardError=journal

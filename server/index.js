@@ -88,8 +88,6 @@ async function handleApi(req, res, pathname, query) {
         return sendJson(res, 200, await getTextaspa());
       case '/api/health':
         return sendJson(res, 200, { ok: true, ts: new Date().toISOString() });
-      case '/api/station-default':
-        return sendJson(res, 200, DEFAULT_STATION);
       default:
         return sendJson(res, 404, { error: 'unknown endpoint' });
     }

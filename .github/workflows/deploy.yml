@@ -9,4 +9,4 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Run deploy script
-        run: sudo /opt/vedurstod-turbo/deploy.sh
+        run: sudo /opt/vedurstod-turbo/scripts/deploy-traefikvm.sh
