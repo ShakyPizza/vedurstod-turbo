@@ -52,6 +52,22 @@ Placeholder slots (`SJÁVARFÖLL`, `SKJÁLFTAR`, `UMFERÐ`) are already in `inde
 ## Deployment paths
 
 - **Raspberry Pi / Tailnet**: `systemd/` + `scripts/deploy-pi.sh`
-- **TraefikVM / Docker**: `Dockerfile`, `docker-compose.yml`, `.github/workflows/deploy.yml`, and `scripts/deploy-traefikvm.sh`
+- **TraefikVM / Docker**: `Dockerfile`, `.github/workflows/deploy.yml`, and `scripts/deploy-traefikvm.sh`
 
-Use the canonical docs for exact operational steps instead of duplicating them here.
+### TraefikVM deployment — critical facts
+
+- **The `docker-compose.yml` in this repo is NOT used in production.** The live `vedur` service is defined in `/opt/traefik/docker-compose.yml` on `traeficvm` (192.168.11.10), alongside all other services.
+- GitHub Actions triggers the self-hosted runner `traefikvm-vedur` (`/opt/github-runner-vedur/`, user `ghrunner`), which runs `sudo /opt/vedurstod-turbo/scripts/deploy-traefikvm.sh`.
+- The sudoers rule for this path lives in `/etc/sudoers` and `/etc/sudoers.d/ghrunner` on the VM. If you rename the deploy script, you must update sudoers on the VM manually.
+- The deploy script uses `git fetch + git reset --hard origin/main` (not `git pull`) to avoid local-change conflicts blocking deploys.
+- Docker build uses `--build --force-recreate` to ensure the container is always recreated, even when the image layer cache produces an identical hash.
+
+### vedur.is TLS issue
+
+`vedur.is` does not send its intermediate certificate (`GlobalSign GCC R6 AlphaSSL CA 2025`) in the TLS handshake. Node.js inside alpine containers fails with `UNABLE_TO_VERIFY_LEAF_SIGNATURE`. The fix is in the `Dockerfile`:
+
+1. `apk add ca-certificates` — installs the OS trust store
+2. `globalsign-intermediate.pem` (bundled in repo root) is copied into the image and registered via `update-ca-certificates`
+3. `NODE_EXTRA_CA_CERTS` env var points Node directly at the intermediate cert
+
+Do not remove these steps from the Dockerfile — without them, `/api/warnings` will silently fail on every poll.
