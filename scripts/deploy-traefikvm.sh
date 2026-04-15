@@ -14,7 +14,8 @@ TRAEFIK_DIR="${TRAEFIK_DIR:-/opt/traefik}"
 
 echo "[deploy] pulling latest"
 cd "$REPO_DIR"
-git pull
+git fetch origin main
+git reset --hard origin/main
 
 echo "[deploy] rebuilding and restarting container"
 cd "$TRAEFIK_DIR"
