@@ -5,6 +5,7 @@ A personal weather console for any Veðurstofa Íslands weather station, styled 
 ## What it shows
 
 - **VEÐUR NÚNA** — current observations from the configured station, on an analog wind compass (main needle for direction + speed, ghost needle for gusts) plus CRT-style readouts for temperature, dew point, humidity, and pressure.
+- **HUGLEIÐINGAR VEÐURFRÆÐINGS** — the latest Icelandic text forecast from Hugin, shown inside the observation panel.
 - **SPÁ** — station-specific forecast out to ~10 days, grouped by day, hourly early then 3-hourly.
 - **VIÐVARANIR** — active Icelandic Met Office weather warnings rendered as warning lamps. Alerts whose polygons cover the station coordinates appear under "NÁGRENNI STÖÐVAR"; the rest of the country appears below. Click a lamp for full CAP detail.
 - **TUNGL** — current moon phase as a real SVG orb with a correct elliptical terminator, phase name in Icelandic, illumination percent, next new/full moon, and rise/set times.
@@ -16,15 +17,11 @@ Labels and weather text are in Icelandic throughout.
 
 - **Server** — Node 20+ (zero-framework ESM, one dependency for XML parsing). Proxies and caches `xmlweather.vedur.is` and scrapes the embedded CAP JSON from the vedur.is warnings page. Serves the built frontend on the same port.
 - **Frontend** — Vite + TypeScript, no UI framework. Each panel is a self-contained module implementing a tiny `Panel` contract, making new data streams a drop-in addition.
-- **Deploy** — systemd user service + a 60 s polling timer that `git pull`s and restarts. Tailnet-only, no inbound ports, no webhooks.
+- **Deploy** — two supported paths: Raspberry Pi + systemd polling for a Tailnet-only install, and Docker + Traefik on `traeficvm` with a self-hosted GitHub Actions runner.
 
 ## Choosing a weather station
 
-The station is set in the browser, not in a config file on disk. Click the **STÖÐ** button in the console header to open the station dialog, where you can enter:
-
-- **Stöðvanúmer** — Veðurstofan's numeric station id (used against `xmlweather.vedur.is?ids=…`)
-- **Nafn** — display name shown in the header
-- **Breiddar- / lengdargráða** — used for warning-polygon lookups, sunrise/sunset, and moon rise/set
+The station is set in the browser, not in a config file on disk. Click the **STÖÐ** button in the console header to open the station dialog. The dialog includes a dropdown backed by `web/stations.json` for common stations around Iceland, and the underlying id/name/lat/lon fields remain editable if you want to override or enter a custom station manually.
 
 Values are persisted in `localStorage` under `vedurstod:station`. Clicking **Sjálfgefið** resets to the built-in default (Seltjarnarnes Suðurnes, `1471`). The server has no per-user state — every API call carries `?station=…&lat=…&lon=…`, and the TTL cache is keyed on those values, so two clients on the same server can display different stations without stepping on each other.
 
@@ -38,6 +35,8 @@ npm run dev        # starts both Vite (:5173) and the API server (:8080) togethe
 ```
 
 Open `http://localhost:5173`. The `/api` proxy is handled by Vite in dev mode.
+
+If you only want the API process, `npm run dev:server` still runs the Node server on `:8080`.
 
 Or as a single production process:
 
@@ -64,13 +63,14 @@ The app will be available at `vedur.benediktorri.is` once Traefik picks up the l
 **Requirements:**
 - An external Docker network named `traefik` must exist (`docker network create traefik` if it doesn't).
 - Traefik must be configured with a `letsencrypt` cert resolver and the Docker provider enabled.
+- Deploys on `traeficvm` are automated by `scripts/deploy-traefikvm.sh`.
 
 ## Deploying via GitHub Actions (auto-deploy on push)
 
-A self-hosted GitHub Actions runner on the server handles deploys. On every push to `main`, the workflow SSHes into the server and runs:
+A self-hosted GitHub Actions runner on `traeficvm` handles deploys. On every push to `main`, the workflow runs:
 
 ```bash
-cd /opt/vedurstod-turbo && git pull origin main && docker compose up -d --build vedur
+sudo /opt/vedurstod-turbo/scripts/deploy-traefikvm.sh
 ```
 
 **Setup:**
@@ -83,7 +83,7 @@ No secrets or SSH keys are needed since the runner executes directly on the serv
 
 ## Deploying on a Raspberry Pi
 
-See [`architecture.md`](./architecture.md) — it has the full data flow, the panel contract, the caching strategy, the systemd units, and step-by-step first-time setup for the Pi including the auto-deploy loop.
+The Pi path uses `scripts/deploy-pi.sh` plus the units in `systemd/`. See [`architecture.md`](./architecture.md) for the full data flow, deployment steps, and the auto-deploy loop.
 
 ## Adding a new data stream
 

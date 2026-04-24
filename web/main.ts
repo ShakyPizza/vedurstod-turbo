@@ -90,8 +90,8 @@ function startSunTimes(station: Station) {
 function paintStationLabel(station: Station) {
   const nameEl = document.getElementById('station-name');
   if (nameEl) nameEl.textContent = station.name.toUpperCase();
-  const footerEl = document.getElementById('footer-station');
-  if (footerEl) footerEl.textContent = `VEÐURSTOFA ÍSLANDS · STÖÐ ${station.id}`;
+  const footerStationIdEl = document.getElementById('footer-station-id');
+  if (footerStationIdEl) footerStationIdEl.textContent = ` · STÖÐ ${station.id}`;
 }
 
 function wireStationDialog(current: Station) {
