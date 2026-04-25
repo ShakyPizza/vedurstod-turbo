@@ -538,7 +538,18 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) 1fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.obs__wind {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.obs__wind .panel__gauge {
+  flex: 1;
 }
 
 .panel__gauge {

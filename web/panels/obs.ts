@@ -142,7 +142,18 @@ function buildGauge(): { root: SVGElement; needle: SVGElement; gustNeedle: SVGEl
   root.append(svg('circle', { cx, cy, r: 14, class: 'wind-gauge__hub' }));
   root.append(svg('circle', { cx, cy, r: 4, class: 'wind-gauge__hub-dot' }));
 
-  // Central readout
+  // Gust readout — sits above the hub so it doesn't crowd the main speed.
+  const gustText = svg(
+    'text',
+    {
+      x: cx,
+      y: cy - 50,
+      class: 'wind-gauge__readout-gust',
+      'text-anchor': 'middle',
+    },
+    'HVIÐA —',
+  );
+  // Main speed readout — below the hub.
   const speedText = svg(
     'text',
     {
@@ -163,17 +174,7 @@ function buildGauge(): { root: SVGElement; needle: SVGElement; gustNeedle: SVGEl
     },
     'm/s',
   );
-  const gustText = svg(
-    'text',
-    {
-      x: cx,
-      y: cy + 90,
-      class: 'wind-gauge__readout-gust',
-      'text-anchor': 'middle',
-    },
-    'HVIÐA —',
-  );
-  root.append(speedText, speedUnit, gustText);
+  root.append(gustText, speedText, speedUnit);
 
   return { root, needle, gustNeedle, speedText, gustText };
 }
@@ -225,6 +226,12 @@ export function obsPanel(): Panel {
       gauge = buildGauge();
       const gaugeWrap = el('div', { class: 'panel__gauge' });
       gaugeWrap.append(gauge.root);
+      const windCol = el(
+        'div',
+        { class: 'obs__wind' },
+        el('span', { class: 'readout__label' }, 'VINDUR'),
+        gaugeWrap,
+      );
 
       const tempMain = el(
         'div',
@@ -246,7 +253,7 @@ export function obsPanel(): Panel {
       );
       const right = el('div', { class: 'obs__right' }, tempMain, subRow);
 
-      body.append(gaugeWrap, right);
+      body.append(windCol, right);
 
       // Textaspa section
       const textaspaSection = el('div', { class: 'textaspa' });
