@@ -22,6 +22,17 @@ interface Textaspa {
   paragraphs: string[];
 }
 
+// Shown when vedur.is publishes no hugleiðingar — gives the empty
+// screen something to say in the spirit of the meteorologist's column.
+const TEXTASPA_FALLBACKS = [
+  'Veðurfræðingur er að fylgjast með málningu þorna og hefur ekki tíma til hugleiðslu.',
+  'Veðurfræðingur heyrir grasið vaxa en hefur ekki leitt hugann að veðri í dag.',
+  'Yfir landinu er hæð lengst uppi og veðurfræðingur kúrir þar með henni.',
+  'Fullkomin áttleysa í dag, drengur. Veðurfræðingur hefur ekki leitt hugann að veðrinu vegna heyanna.',
+  'Brakandi þurrkur og allir úti á túni. Veðurfræðingur hefur ekki leitt hugann að veðri í dag vegna heyanna.',
+  'Vinsamlegast dokið við, veðurfræðingur er að hugleiða í þessum rituðu orðum. Ef ekkert heyrist frá honum fyrir kaffi má hringja á björgunarsveit.',
+];
+
 const DIRS: Record<string, number> = {
   N: 0,
   NNA: 22.5,
@@ -142,7 +153,18 @@ function buildGauge(): { root: SVGElement; needle: SVGElement; gustNeedle: SVGEl
   root.append(svg('circle', { cx, cy, r: 14, class: 'wind-gauge__hub' }));
   root.append(svg('circle', { cx, cy, r: 4, class: 'wind-gauge__hub-dot' }));
 
-  // Central readout
+  // Gust readout — sits above the hub so it doesn't crowd the main speed.
+  const gustText = svg(
+    'text',
+    {
+      x: cx,
+      y: cy - 50,
+      class: 'wind-gauge__readout-gust',
+      'text-anchor': 'middle',
+    },
+    'HVIÐA —',
+  );
+  // Main speed readout — below the hub.
   const speedText = svg(
     'text',
     {
@@ -163,17 +185,7 @@ function buildGauge(): { root: SVGElement; needle: SVGElement; gustNeedle: SVGEl
     },
     'm/s',
   );
-  const gustText = svg(
-    'text',
-    {
-      x: cx,
-      y: cy + 90,
-      class: 'wind-gauge__readout-gust',
-      'text-anchor': 'middle',
-    },
-    'HVIÐA —',
-  );
-  root.append(speedText, speedUnit, gustText);
+  root.append(gustText, speedText, speedUnit);
 
   return { root, needle, gustNeedle, speedText, gustText };
 }
@@ -225,6 +237,12 @@ export function obsPanel(): Panel {
       gauge = buildGauge();
       const gaugeWrap = el('div', { class: 'panel__gauge' });
       gaugeWrap.append(gauge.root);
+      const windCol = el(
+        'div',
+        { class: 'obs__wind' },
+        el('span', { class: 'readout__label' }, 'VINDUR'),
+        gaugeWrap,
+      );
 
       const tempMain = el(
         'div',
@@ -246,7 +264,7 @@ export function obsPanel(): Panel {
       );
       const right = el('div', { class: 'obs__right' }, tempMain, subRow);
 
-      body.append(gaugeWrap, right);
+      body.append(windCol, right);
 
       // Textaspa section
       const textaspaSection = el('div', { class: 'textaspa' });
@@ -322,8 +340,14 @@ export function obsPanel(): Panel {
       try {
         const spa = await getJson<Textaspa>(textaspaUrl);
         textaspaBody.innerHTML = '';
-        for (const para of spa.paragraphs) {
-          textaspaBody.append(el('p', { class: 'textaspa__para' }, para));
+        const paragraphs = spa.paragraphs.filter((p) => p.trim().length > 0);
+        if (paragraphs.length === 0) {
+          const phrase = TEXTASPA_FALLBACKS[Math.floor(Math.random() * TEXTASPA_FALLBACKS.length)];
+          textaspaBody.append(el('p', { class: 'textaspa__para textaspa__para--fallback' }, phrase));
+        } else {
+          for (const para of paragraphs) {
+            textaspaBody.append(el('p', { class: 'textaspa__para' }, para));
+          }
         }
         if (spa.createdAt) {
           const fmt3 = new Intl.DateTimeFormat('is-IS', {

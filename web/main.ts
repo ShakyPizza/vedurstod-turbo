@@ -6,6 +6,8 @@ import { obsPanel } from './panels/obs.ts';
 import { forecastPanel } from './panels/forecast.ts';
 import { warningsPanel } from './panels/warnings.ts';
 import { moonPanel } from './panels/moon.ts';
+import { quakesPanel } from './panels/quakes.ts';
+import { tidesPanel } from './panels/tides.ts';
 import { placeholderPanel } from './panels/placeholder.ts';
 import { DEFAULT_STATION, clearStation, loadStation, saveStation } from './station-config.ts';
 import STATIONS from './stations.json';
@@ -15,8 +17,8 @@ const PANELS: Record<string, () => Panel> = {
   forecast: forecastPanel,
   warnings: warningsPanel,
   moon: moonPanel,
-  tides: () => placeholderPanel('SJÁVARFÖLL', 'rás ótengd'),
-  quakes: () => placeholderPanel('SKJÁLFTAR', 'rás ótengd'),
+  tides: tidesPanel,
+  quakes: quakesPanel,
   traffic: () => placeholderPanel('UMFERÐ', 'rás ótengd'),
 };
 

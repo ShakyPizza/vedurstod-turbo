@@ -42,7 +42,7 @@ body {
 
 body {
   background:
-    radial-gradient(ellipse at 50% 0%, #3a2f27 0%, #140f0c 55%, #070504 100%),
+    radial-gradient(ellipse at 50% 0%, #1e1814 0%, #100c0a 55%, #060403 100%),
     var(--metal-0);
   padding: 24px;
 }
@@ -51,32 +51,17 @@ body {
   max-width: 1680px;
   margin: 0 auto;
   background:
-    linear-gradient(180deg, #38302a 0%, #221c18 10%, #1a1614 40%, #120e0c 100%),
+    linear-gradient(180deg, #221d19 0%, #1b1714 30%, #161210 70%, #110d0b 100%),
     var(--metal-1);
-  border: 1px solid var(--bezel-hi);
+  border: 1px solid #2a231e;
   border-radius: 18px;
   padding: 20px 24px 24px;
   box-shadow:
     0 0 0 1px #000,
-    inset 0 1px 0 #5a4c42,
-    inset 0 -2px 0 #000,
-    0 30px 80px rgba(0, 0, 0, 0.6);
+    inset 0 1px 0 #2e2620,
+    inset 0 -1px 0 #000,
+    0 24px 60px rgba(0, 0, 0, 0.55);
   position: relative;
-}
-
-.console::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 14px;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.015) 0 1px,
-      transparent 1px 3px
-    );
-  mix-blend-mode: overlay;
 }
 
 .console__header {
@@ -178,17 +163,16 @@ body {
 
 .station-dialog {
   color: var(--label);
-  background:
-    linear-gradient(180deg, #2a2420 0%, #1a1614 32%, #120d0b 100%);
-  border: 1px solid var(--bezel-hi);
+  background: #1a1614;
+  border: 1px solid #2a231e;
   border-radius: 10px;
   padding: 0;
   max-width: 420px;
   width: calc(100% - 32px);
   box-shadow:
-    inset 0 1px 0 #4a3e35,
-    inset 0 -2px 0 #000,
-    0 20px 60px rgba(0, 0, 0, 0.6);
+    inset 0 1px 0 #2a231e,
+    inset 0 -1px 0 #000,
+    0 16px 40px rgba(0, 0, 0, 0.55);
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
@@ -226,12 +210,10 @@ body {
 
 .station-form__row input {
   all: unset;
-  background: radial-gradient(circle at 50% 30%, #241a08 0%, #0a0503 100%);
-  border: 1px solid var(--bezel-lo);
+  background: #120c04;
+  border: 1px solid #1a1410;
   border-radius: 4px;
-  box-shadow:
-    inset 0 2px 4px #000,
-    inset 0 -1px 0 #3a2f18;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
   padding: 8px 10px;
   font-family: 'VT323', monospace;
   font-size: 20px;
@@ -277,17 +259,15 @@ body {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--label);
-  background: linear-gradient(180deg, #382e27 0%, #1a1510 100%);
-  border: 1px solid var(--bezel-lo);
+  background: #221c17;
+  border: 1px solid #0a0a0a;
   border-radius: 4px;
-  box-shadow:
-    inset 0 1px 0 #5a4c42,
-    inset 0 -1px 0 #000;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .station-form__buttons button:hover,
 .station-form__buttons button:focus-visible {
-  background: linear-gradient(180deg, #4a3e35 0%, #241c16 100%);
+  background: #2c241e;
 }
 
 .station-form__buttons button:focus-visible {
@@ -297,7 +277,7 @@ body {
 
 .station-form__buttons button#station-save {
   color: #1a0e05;
-  background: linear-gradient(180deg, #f5c65a 0%, #a0610d 100%);
+  background: #c69036;
   border-color: #5a3808;
 }
 
@@ -330,28 +310,19 @@ body {
 
 .panel {
   background:
-    linear-gradient(180deg, #2a2420 0%, #1a1614 32%, #120d0b 100%);
+    linear-gradient(180deg, #221d19 0%, #1a1614 50%, #14100e 100%);
   border-radius: 10px;
-  border: 1px solid var(--bezel-hi);
+  border: 1px solid #2a231e;
   box-shadow:
-    inset 0 1px 0 #4a3e35,
-    inset 0 -2px 0 #000,
-    0 2px 0 #000,
-    0 12px 24px rgba(0, 0, 0, 0.45);
+    inset 0 1px 0 #2c2620,
+    inset 0 -1px 0 #000,
+    0 1px 0 #000,
+    0 6px 14px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   padding: 14px 16px 14px;
   position: relative;
   min-height: 160px;
-}
-
-.panel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 40%);
 }
 
 .panel--obs {
@@ -378,6 +349,23 @@ body {
   grid-column: span 4;
   grid-row: span 1;
   min-height: 120px;
+}
+
+.console__grid > [data-panel='quakes'] {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+
+.console__grid > [data-panel='tides'] {
+  grid-column: span 4;
+  grid-row: span 1;
+}
+
+@media (max-width: 1100px) {
+  .console__grid > [data-panel='quakes'],
+  .console__grid > [data-panel='tides'] {
+    grid-column: span 12;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -550,17 +538,26 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) 1fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+  align-content: start;
+}
+
+.obs__wind {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.obs__wind .panel__gauge {
+  flex: 1;
 }
 
 .panel__gauge {
-  background:
-    radial-gradient(circle at 50% 30%, #1a1410 0%, #070402 85%);
+  background: #0c0907;
   border-radius: 12px;
-  border: 1px solid var(--bezel-lo);
-  box-shadow:
-    inset 0 2px 6px #000,
-    inset 0 -1px 0 #4a3e35;
+  border: 1px solid #1a1512;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
   padding: 14px;
   display: flex;
   justify-content: center;
@@ -747,12 +744,10 @@ body {
 }
 
 .readout__screen {
-  background: radial-gradient(circle at 50% 30%, #241a08 0%, #0a0503 100%);
-  border: 1px solid var(--bezel-lo);
+  background: #120c04;
+  border: 1px solid #1a1410;
   border-radius: 6px;
-  box-shadow:
-    inset 0 2px 4px #000,
-    inset 0 -1px 0 #3a2f18;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
   padding: 8px 12px;
   display: flex;
   align-items: baseline;
@@ -964,12 +959,10 @@ body {
   gap: 12px;
   align-items: center;
   padding: 10px 12px;
-  background: linear-gradient(180deg, #201a15 0%, #0e0b08 100%);
+  background: #14110d;
   border: 1px solid #0a0a0a;
   border-radius: 6px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    inset 0 -1px 0 #000;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .lamp:focus-visible {
@@ -1115,12 +1108,10 @@ body {
 }
 
 .moon__countdown-cell {
-  background: radial-gradient(circle at 50% 30%, #241a08 0%, #0a0503 100%);
-  border: 1px solid var(--bezel-lo);
+  background: #120c04;
+  border: 1px solid #1a1410;
   border-radius: 6px;
-  box-shadow:
-    inset 0 2px 4px #000,
-    inset 0 -1px 0 #3a2f18;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
   padding: 8px 10px 10px;
   display: flex;
   flex-direction: column;
@@ -1158,14 +1149,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 40%, #0a1420 0%, #03060d 75%);
-  border: 1px solid var(--bezel-lo);
+  background: #050810;
+  border: 1px solid #0c1018;
   border-radius: 50%;
   aspect-ratio: 1 / 1;
   padding: 14px;
-  box-shadow:
-    inset 0 2px 6px #000,
-    inset 0 -1px 0 #3d342d;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
 .moon-orb {
@@ -1275,12 +1264,10 @@ body {
   overflow-y: auto;
   max-height: 180px;
   padding: 10px 14px;
-  background: radial-gradient(circle at 50% 30%, #241a08 0%, #0a0503 100%);
-  border: 1px solid var(--bezel-lo);
+  background: #120c04;
+  border: 1px solid #1a1410;
   border-radius: 6px;
-  box-shadow:
-    inset 0 2px 4px #000,
-    inset 0 -1px 0 #3a2f18;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .textaspa__body::-webkit-scrollbar {
@@ -1301,6 +1288,175 @@ body {
 
 .textaspa__para:last-child {
   margin-bottom: 0;
+}
+
+/* ================ Tides panel ================ */
+
+.panel__body--tides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.tides__cell {
+  background: #120c04;
+  border: 1px solid #1a1410;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tides__cell-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--label-dim);
+}
+
+.tides__count {
+  font-family: 'VT323', monospace;
+  color: var(--crt-amber);
+  text-shadow: 0 0 6px var(--crt-amber-dim);
+  letter-spacing: 0.02em;
+  font-size: clamp(26px, 4.4vw, 38px);
+  line-height: 1;
+}
+
+.tides__stamp {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--label-dim);
+  letter-spacing: 0.06em;
+}
+
+/* ================ Quakes panel ================ */
+
+.panel__body--quakes {
+  gap: 12px;
+  overflow: hidden;
+}
+
+.quake-featured {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #2a221d;
+}
+
+.quake-featured__label,
+.quake-list__label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--label-dim);
+}
+
+.quake-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+  padding-right: 4px;
+}
+
+.quake-list::-webkit-scrollbar {
+  width: 6px;
+}
+.quake-list::-webkit-scrollbar-thumb {
+  background: #3d342d;
+  border-radius: 3px;
+}
+
+.quake-list__empty {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--label-dim);
+  background: #0c0907;
+  border: 1px dashed #2a221d;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.quake-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  background: #14110d;
+  border: 1px solid #0a0a0a;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.quake-row__mag {
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  text-align: center;
+  letter-spacing: 0.02em;
+  color: var(--crt-amber);
+  text-shadow: 0 0 6px var(--crt-amber-dim);
+}
+
+.quake-row--minor .quake-row__mag {
+  color: #79a673;
+  text-shadow: 0 0 4px #2c4a26;
+}
+
+.quake-row--amber .quake-row__mag {
+  color: var(--crt-amber);
+  text-shadow: 0 0 8px var(--crt-amber-dim);
+}
+
+.quake-row--strong {
+  border-color: #6e1d12;
+}
+
+.quake-row--strong .quake-row__mag {
+  color: var(--lamp-red);
+  text-shadow: 0 0 8px var(--lamp-glow-red);
+}
+
+.quake-featured .quake-row {
+  background: #1a130f;
+}
+
+.quake-featured .quake-row__mag {
+  font-size: 34px;
+}
+
+.quake-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quake-row__place {
+  color: var(--label);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quake-row__sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--label-dim);
+  letter-spacing: 0.04em;
 }
 
 /* ================ Placeholder panels ================ */

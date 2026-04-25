@@ -2,14 +2,15 @@ import SunCalc from 'suncalc';
 import type { Panel } from './types.ts';
 import { el, svg } from './types.ts';
 
+// Phase names follow stjornufraedi.is/solkerfid/tunglid/kvartilaskipti.
 const PHASE_NAMES: Array<{ max: number; name: string }> = [
   { max: 0.03, name: 'Nýtt tungl' },
   { max: 0.22, name: 'Vaxandi sigð' },
-  { max: 0.28, name: 'Fyrsta kvartil' },
-  { max: 0.47, name: 'Vaxandi gleiður' },
+  { max: 0.28, name: 'Hálft vaxandi' },
+  { max: 0.47, name: 'Vaxandi gleitt' },
   { max: 0.53, name: 'Fullt tungl' },
-  { max: 0.72, name: 'Minnkandi gleiður' },
-  { max: 0.78, name: 'Síðasta kvartil' },
+  { max: 0.72, name: 'Minnkandi gleitt' },
+  { max: 0.78, name: 'Hálft minnkandi' },
   { max: 0.97, name: 'Minnkandi sigð' },
   { max: 1.01, name: 'Nýtt tungl' },
 ];
@@ -55,11 +56,11 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
 
 function countdownText(from: Date, to: Date): string {
   const diff = to.getTime() - from.getTime();
-  if (diff <= 0) return '0d 0h';
+  if (diff <= 0) return '0d 00st';
   const totalH = Math.floor(diff / 3600000);
   const days = Math.floor(totalH / 24);
   const hours = totalH % 24;
-  return `${days}d ${hours.toString().padStart(2, '0')}h`;
+  return `${days}d ${hours.toString().padStart(2, '0')}st`;
 }
 
 export function moonPanel(): Panel {
