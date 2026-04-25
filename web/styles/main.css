@@ -539,15 +539,18 @@ body {
   grid-template-columns: minmax(0, 1.3fr) 1fr;
   gap: 18px;
   align-items: stretch;
-  align-content: stretch;
+  align-content: start;
 }
 
 .obs__wind {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: 6px;
   min-width: 0;
+}
+
+.obs__wind .panel__gauge {
+  flex: 1;
 }
 
 .panel__gauge {
@@ -663,7 +666,6 @@ body {
 .obs__right {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: 14px;
   min-width: 0;
 }
