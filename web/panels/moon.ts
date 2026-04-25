@@ -6,11 +6,11 @@ import { el, svg } from './types.ts';
 const PHASE_NAMES: Array<{ max: number; name: string }> = [
   { max: 0.03, name: 'Nýtt tungl' },
   { max: 0.22, name: 'Vaxandi sigð' },
-  { max: 0.28, name: 'Hálft vaxandi tungl' },
-  { max: 0.47, name: 'Vaxandi gleitt tungl' },
+  { max: 0.28, name: 'Hálft vaxandi' },
+  { max: 0.47, name: 'Vaxandi gleitt' },
   { max: 0.53, name: 'Fullt tungl' },
-  { max: 0.72, name: 'Minnkandi gleitt tungl' },
-  { max: 0.78, name: 'Hálft minnkandi tungl' },
+  { max: 0.72, name: 'Minnkandi gleitt' },
+  { max: 0.78, name: 'Hálft minnkandi' },
   { max: 0.97, name: 'Minnkandi sigð' },
   { max: 1.01, name: 'Nýtt tungl' },
 ];
