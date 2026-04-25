@@ -538,12 +538,14 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) 1fr;
   gap: 18px;
-  align-items: end;
+  align-items: stretch;
+  align-content: stretch;
 }
 
 .obs__wind {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 6px;
   min-width: 0;
 }
@@ -661,6 +663,7 @@ body {
 .obs__right {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 14px;
   min-width: 0;
 }
