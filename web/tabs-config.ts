@@ -10,12 +10,21 @@ export const PRESET_VERSION = 1;
 export interface TabsState {
   stations: Station[];
   activeIndex: number;
+  panelLayout: PanelLayouts;
 }
 
 export interface PresetFile {
   version: number;
   stations: Station[];
 }
+
+export interface PanelLayout {
+  colSpan: number;
+  rowSpan: number;
+  minimized?: boolean;
+}
+
+export type PanelLayouts = Record<string, PanelLayout>;
 
 function isStation(v: unknown): v is Station {
   if (!v || typeof v !== 'object') return false;
@@ -34,6 +43,37 @@ function isStation(v: unknown): v is Station {
   );
 }
 
+function isPanelLayout(v: unknown): v is PanelLayout {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return (
+    typeof o.colSpan === 'number' &&
+    Number.isFinite(o.colSpan) &&
+    typeof o.rowSpan === 'number' &&
+    Number.isFinite(o.rowSpan) &&
+    (o.minimized === undefined || typeof o.minimized === 'boolean')
+  );
+}
+
+function pickPanelLayout(o: Record<string, unknown>): PanelLayout {
+  return {
+    colSpan: Math.round(o.colSpan as number),
+    rowSpan: Math.round(o.rowSpan as number),
+    minimized: o.minimized === true,
+  };
+}
+
+function pickPanelLayouts(v: unknown): PanelLayouts {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+  const layouts: PanelLayouts = {};
+  for (const [key, value] of Object.entries(v as Record<string, unknown>)) {
+    if (isPanelLayout(value)) {
+      layouts[key] = pickPanelLayout(value as unknown as Record<string, unknown>);
+    }
+  }
+  return layouts;
+}
+
 function pickStation(o: Record<string, unknown>): Station {
   const s: Station = {
     id: o.id as number,
@@ -49,7 +89,7 @@ function clamp(state: TabsState): TabsState {
   const stations = state.stations.slice(0, MAX_TABS);
   if (stations.length === 0) stations.push({ ...DEFAULT_STATION });
   const activeIndex = Math.min(Math.max(0, state.activeIndex | 0), stations.length - 1);
-  return { stations, activeIndex };
+  return { stations, activeIndex, panelLayout: pickPanelLayouts(state.panelLayout) };
 }
 
 function migrateLegacy(): TabsState | null {
@@ -58,7 +98,11 @@ function migrateLegacy(): TabsState | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as unknown;
     if (!isStation(parsed)) return null;
-    return { stations: [pickStation(parsed as unknown as Record<string, unknown>)], activeIndex: 0 };
+    return {
+      stations: [pickStation(parsed as unknown as Record<string, unknown>)],
+      activeIndex: 0,
+      panelLayout: {},
+    };
   } catch {
     return null;
   }
@@ -77,6 +121,7 @@ export function loadTabs(): TabsState {
           return clamp({
             stations,
             activeIndex: typeof parsed.activeIndex === 'number' ? parsed.activeIndex : 0,
+            panelLayout: pickPanelLayouts(parsed.panelLayout),
           });
         }
       }
@@ -89,7 +134,7 @@ export function loadTabs(): TabsState {
     saveTabs(migrated);
     return migrated;
   }
-  return { stations: [{ ...DEFAULT_STATION }], activeIndex: 0 };
+  return { stations: [{ ...DEFAULT_STATION }], activeIndex: 0, panelLayout: {} };
 }
 
 export function saveTabs(state: TabsState): void {
