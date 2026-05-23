@@ -66,6 +66,8 @@ function countdownText(from: Date, to: Date): string {
 export function moonPanel(): Panel {
   let orbLit: SVGElement;
   let orbDisk: SVGElement;
+  let stateLabel: HTMLElement;
+  let stateLamp: HTMLElement;
   let nameEl: HTMLElement;
   let illumEl: HTMLElement;
   let nextNewCountEl: HTMLElement;
@@ -81,10 +83,19 @@ export function moonPanel(): Panel {
       station = { lat: ctx.station.lat, lon: ctx.station.lon };
       root.innerHTML = '';
 
+      stateLamp = el('span', { class: 'status-lamp' });
+      stateLabel = el('span', {}, '—');
+
       const header = el(
         'header',
         { class: 'panel__header' },
         el('h2', { class: 'panel__title' }, 'TUNGL'),
+        el(
+          'div',
+          { class: 'panel__status' },
+          stateLamp,
+          stateLabel,
+        ),
       );
 
       nextNewCountEl = el('span', { class: 'moon__countdown-value' }, '—');
@@ -165,8 +176,11 @@ export function moonPanel(): Panel {
     refresh() {
       const now = new Date();
       const illum = SunCalc.getMoonIllumination(now);
+      const phase = phaseName(illum.phase).toUpperCase();
       orbLit.setAttribute('d', moonLitPath(R, illum.fraction, illum.phase));
-      nameEl.textContent = phaseName(illum.phase).toUpperCase();
+      stateLabel.textContent = phase;
+      stateLamp.className = 'status-lamp status-lamp--on';
+      nameEl.textContent = phase;
       illumEl.textContent = `${(illum.fraction * 100).toFixed(0)}% LÝST`;
 
       nextNewCountEl.textContent = countdownText(now, nextPhaseDate(now, 0));

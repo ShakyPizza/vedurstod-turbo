@@ -428,7 +428,7 @@ body[data-modal='true'] .console__footer {
 
 .console__grid > [data-panel='quakes'] {
   grid-column: span 8;
-  grid-row: span 3;
+  grid-row: span 4;
 }
 
 .console__grid > [data-panel='tides'] {

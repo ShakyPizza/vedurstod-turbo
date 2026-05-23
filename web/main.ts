@@ -30,7 +30,7 @@ const PANELS: Record<string, () => Panel> = {
   moon: moonPanel,
   tides: tidesPanel,
   quakes: quakesPanel,
-  traffic: () => placeholderPanel('UMFERÐ', 'rás ótengd'),
+  traffic: () => placeholderPanel('UMFERÐ', 'rás ótengd', { label: 'RÁS ÓTENGD', alert: true }),
 };
 
 type PanelKey = keyof typeof PANELS;
@@ -50,7 +50,7 @@ const PANEL_BOUNDS: Record<PanelKey, PanelBounds> = {
   warnings: { colSpan: 8, rowSpan: 3, minCols: 4, maxCols: 12, minRows: 2, maxRows: 6 },
   moon: { colSpan: 4, rowSpan: 3, minCols: 3, maxCols: 8, minRows: 2, maxRows: 5 },
   tides: { colSpan: 4, rowSpan: 2, minCols: 3, maxCols: 8, minRows: 1, maxRows: 4 },
-  quakes: { colSpan: 8, rowSpan: 3, minCols: 4, maxCols: 12, minRows: 2, maxRows: 5 },
+  quakes: { colSpan: 8, rowSpan: 4, minCols: 4, maxCols: 12, minRows: 2, maxRows: 5 },
   traffic: { colSpan: 4, rowSpan: 2, minCols: 3, maxCols: 8, minRows: 1, maxRows: 4 },
 };
 
