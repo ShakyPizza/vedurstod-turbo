@@ -23,6 +23,13 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
   timeZone: 'Atlantic/Reykjavik',
 });
 
+const NEW_QUAKE_BLINK_MS = 10 * 60 * 1000;
+
+function quakeTime(q: Quake): number {
+  const t = new Date(q.time).getTime();
+  return Number.isFinite(t) ? t : 0;
+}
+
 function timeAgo(iso: string, now: Date): string {
   const t = new Date(iso).getTime();
   if (!Number.isFinite(t)) return '—';
@@ -39,13 +46,15 @@ function timeAgo(iso: string, now: Date): string {
 function magClass(mag: number): string {
   if (mag > 4) return 'quake-row--strong';
   if (mag > 3) return 'quake-row--amber';
+  if (mag > 2) return 'quake-row--moderate';
   return 'quake-row--minor';
 }
 
-function renderRow(q: Quake, now: Date): HTMLElement {
+function renderRow(q: Quake, now: Date, seenAt: number): HTMLElement {
+  const isNew = now.getTime() - seenAt < NEW_QUAKE_BLINK_MS;
   return el(
     'div',
-    { class: `quake-row ${magClass(q.magnitude)}` },
+    { class: `quake-row ${magClass(q.magnitude)}${isNew ? ' quake-row--new' : ''}` },
     el(
       'span',
       { class: 'quake-row__mag' },
@@ -70,6 +79,8 @@ export function quakesPanel(): Panel {
   let body: HTMLElement;
   let footerCount: HTMLElement;
   let footerStamp: HTMLElement;
+  const firstSeen = new Map<string, number>();
+  let hasLoaded = false;
 
   return {
     intervalMs: 60 * 1000,
@@ -112,9 +123,22 @@ export function quakesPanel(): Panel {
           (q) => Number.isFinite(q.magnitude) && q.magnitude >= 1,
         );
 
+        const visibleIds = new Set<string>();
+        for (const q of quakes) {
+          visibleIds.add(q.id);
+          if (!firstSeen.has(q.id)) {
+            firstSeen.set(q.id, hasLoaded ? now.getTime() : quakeTime(q));
+          }
+        }
+        for (const [id, seenAt] of firstSeen) {
+          if (!visibleIds.has(id) && now.getTime() - seenAt >= NEW_QUAKE_BLINK_MS) {
+            firstSeen.delete(id);
+          }
+        }
+
         const featured = quakes
           .filter((q) => q.magnitude >= 3)
-          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())[0];
+          .sort((a, b) => quakeTime(b) - quakeTime(a))[0];
 
         const recent = quakes
           .filter((q) => !featured || q.id !== featured.id)
@@ -128,7 +152,7 @@ export function quakesPanel(): Panel {
               'div',
               { class: 'quake-featured' },
               el('div', { class: 'quake-featured__label' }, 'NÝJASTI ≥ M3.0'),
-              renderRow(featured, now),
+              renderRow(featured, now, firstSeen.get(featured.id) ?? quakeTime(featured)),
             ),
           );
         }
@@ -140,12 +164,13 @@ export function quakesPanel(): Panel {
             el('div', { class: 'quake-list__label' }, 'NÝLEGIR SKJÁLFTAR'),
             ...(recent.length === 0
               ? [el('p', { class: 'quake-list__empty' }, 'Engir skjálftar á síðustu 48 klst.')]
-              : recent.map((q) => renderRow(q, now))),
+              : recent.map((q) => renderRow(q, now, firstSeen.get(q.id) ?? quakeTime(q)))),
           ),
         );
 
         footerCount.textContent = String(quakes.length);
         footerStamp.textContent = TIME_FMT.format(new Date(data.fetchedAt));
+        hasLoaded = true;
       } catch (err) {
         console.error('quakes refresh failed', err);
         body.innerHTML = '';
