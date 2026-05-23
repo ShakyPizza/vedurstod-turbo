@@ -31,6 +31,7 @@ const TEXTASPA_FALLBACKS = [
   'Fullkomin áttleysa í dag, drengur. Veðurfræðingur hefur ekki leitt hugann að veðrinu vegna heyanna.',
   'Brakandi þurrkur og allir úti á túni. Veðurfræðingur hefur ekki leitt hugann að veðri í dag vegna heyanna.',
   'Vinsamlegast dokið við, veðurfræðingur er að hugleiða í þessum rituðu orðum. Ef ekkert heyrist frá honum fyrir kaffi má hringja á björgunarsveit.',
+  'Vakthafandi veðurfræðingur er að hita upp ábrystir sem konan útbjó fyrr í dag. Hugleiðingar kynntar síðar.'
 ];
 
 const DIRS: Record<string, number> = {
