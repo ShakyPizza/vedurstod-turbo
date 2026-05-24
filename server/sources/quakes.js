@@ -114,7 +114,7 @@ function parsePage(html) {
       const time = extractDate(rec);
       const place = dL && dD && dR ? `${dL} km ${dD} af ${dR}` : dR || null;
       return {
-        id: `${time ?? ''}-${i}`,
+        id: `${time ?? ''}-${lat ?? ''}-${lon ?? ''}`,
         lat,
         lon,
         time,
