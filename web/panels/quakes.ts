@@ -36,11 +36,11 @@ function timeAgo(iso: string, now: Date): string {
   const diff = Math.max(0, now.getTime() - t);
   const m = Math.floor(diff / 60000);
   if (m < 1) return 'núna';
-  if (m < 60) return `${m} mín`;
+  if (m < 60) return `fyrir ${m} ${m === 1 ? 'mínútu' : 'mínútum'} síðan`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} klst`;
+  if (h < 24) return `fyrir ${h} klst síðan`;
   const d = Math.floor(h / 24);
-  return `${d}d`;
+  return `fyrir ${d} ${d === 1 ? 'degi' : 'dögum'} síðan`;
 }
 
 function magClass(mag: number): string {
@@ -141,8 +141,9 @@ export function quakesPanel(): Panel {
           .sort((a, b) => quakeTime(b) - quakeTime(a))[0];
 
         const recent = quakes
-          .filter((q) => !featured || q.id !== featured.id)
-          .slice(0, 16);
+          .filter((q) => !featured || q.id !== featured.id);
+        const recentSplit = Math.ceil(recent.length / 2);
+        const recentColumns = [recent.slice(0, recentSplit), recent.slice(recentSplit)];
 
         body.innerHTML = '';
 
@@ -164,7 +165,13 @@ export function quakesPanel(): Panel {
             el('div', { class: 'quake-list__label' }, 'NÝLEGIR SKJÁLFTAR'),
             ...(recent.length === 0
               ? [el('p', { class: 'quake-list__empty' }, 'Engir skjálftar á síðustu 48 klst.')]
-              : recent.map((q) => renderRow(q, now, firstSeen.get(q.id) ?? quakeTime(q)))),
+              : recentColumns.map((column) =>
+                  el(
+                    'div',
+                    { class: 'quake-list__column' },
+                    ...column.map((q) => renderRow(q, now, firstSeen.get(q.id) ?? quakeTime(q))),
+                  ),
+                )),
           ),
         );
 

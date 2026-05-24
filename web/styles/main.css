@@ -418,7 +418,7 @@ body[data-modal='true'] .console__footer {
 
 .panel--moon {
   grid-column: span 4;
-  grid-row: span 3;
+  grid-row: span 4;
 }
 
 .panel--placeholder {
@@ -428,7 +428,7 @@ body[data-modal='true'] .console__footer {
 
 .console__grid > [data-panel='quakes'] {
   grid-column: span 8;
-  grid-row: span 4;
+  grid-row: span 5;
 }
 
 .console__grid > [data-panel='tides'] {
@@ -1549,17 +1549,41 @@ body.panel-resize-active * {
 .quake-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 4px 10px;
   align-content: start;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 0;
   flex: 1;
   padding-right: 4px;
 }
 
+.quake-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.quake-list::-webkit-scrollbar-track {
+  background: #0c0907;
+}
+
+.quake-list::-webkit-scrollbar-thumb {
+  background: #3a3028;
+  border: 1px solid #0c0907;
+  border-radius: 4px;
+}
+
 .quake-list__label,
 .quake-list__empty {
   grid-column: 1 / -1;
+}
+
+.quake-list__column {
+  display: grid;
+  grid-auto-rows: minmax(42px, max-content);
+  gap: 4px;
+  align-content: start;
+  min-width: 0;
 }
 
 @media (max-width: 1100px) {
@@ -1585,6 +1609,8 @@ body.panel-resize-active * {
   grid-template-columns: 52px 1fr;
   gap: 10px;
   align-items: center;
+  box-sizing: border-box;
+  min-height: 42px;
   padding: 6px 10px;
   background: #14110d;
   border: 1px solid #0a0a0a;
@@ -1731,6 +1757,7 @@ body.panel-resize-active * {
   color: var(--label);
   font-size: 12px;
   font-weight: 500;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1739,6 +1766,7 @@ body.panel-resize-active * {
 .quake-row__sub {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
+  line-height: 1.2;
   color: var(--label-dim);
   letter-spacing: 0.04em;
 }
