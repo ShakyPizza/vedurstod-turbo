@@ -45,13 +45,13 @@ interface PanelBounds {
 }
 
 const PANEL_BOUNDS: Record<PanelKey, PanelBounds> = {
-  obs: { colSpan: 6, rowSpan: 5, minCols: 4, maxCols: 12, minRows: 3, maxRows: 7 },
+  obs: { colSpan: 6, rowSpan: 5, minCols: 6, maxCols: 12, minRows: 5, maxRows: 7 },
   forecast: { colSpan: 6, rowSpan: 5, minCols: 4, maxCols: 12, minRows: 3, maxRows: 7 },
-  warnings: { colSpan: 8, rowSpan: 3, minCols: 4, maxCols: 12, minRows: 2, maxRows: 6 },
-  moon: { colSpan: 4, rowSpan: 3, minCols: 3, maxCols: 8, minRows: 2, maxRows: 5 },
-  tides: { colSpan: 4, rowSpan: 2, minCols: 3, maxCols: 8, minRows: 1, maxRows: 4 },
-  quakes: { colSpan: 8, rowSpan: 4, minCols: 4, maxCols: 12, minRows: 2, maxRows: 5 },
-  traffic: { colSpan: 4, rowSpan: 2, minCols: 3, maxCols: 8, minRows: 1, maxRows: 4 },
+  warnings: { colSpan: 8, rowSpan: 3, minCols: 6, maxCols: 12, minRows: 3, maxRows: 6 },
+  moon: { colSpan: 4, rowSpan: 3, minCols: 4, maxCols: 8, minRows: 3, maxRows: 5 },
+  tides: { colSpan: 4, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
+  quakes: { colSpan: 8, rowSpan: 4, minCols: 6, maxCols: 12, minRows: 4, maxRows: 5 },
+  traffic: { colSpan: 4, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
 };
 
 const MOBILE_LAYOUT = window.matchMedia('(max-width: 700px)');
