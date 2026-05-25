@@ -3,6 +3,7 @@ import SunCalc from 'suncalc';
 
 import type { Panel, PanelContext, Station } from './panels/types.ts';
 import { obsPanel } from './panels/obs.ts';
+import { textaspaPanel } from './panels/textaspa.ts';
 import { forecastPanel } from './panels/forecast.ts';
 import { warningsPanel } from './panels/warnings.ts';
 import { moonPanel } from './panels/moon.ts';
@@ -21,10 +22,11 @@ import {
   type TabsState,
 } from './tabs-config.ts';
 import STATIONS from './stations.json';
-import { ICON_EXPORT_DOWN, ICON_IMPORT_UP, ICON_PLUS, ICON_RESET_PANEL } from './icons.ts';
+import { ICON_EXPORT_DOWN, ICON_IMPORT_UP, ICON_LOCK, ICON_PLUS, ICON_RESET_PANEL, ICON_UNLOCK } from './icons.ts';
 
 const PANELS: Record<string, () => Panel> = {
   obs: obsPanel,
+  textaspa: textaspaPanel,
   forecast: forecastPanel,
   warnings: warningsPanel,
   moon: moonPanel,
@@ -45,16 +47,19 @@ interface PanelBounds {
 }
 
 const PANEL_BOUNDS: Record<PanelKey, PanelBounds> = {
-  obs: { colSpan: 6, rowSpan: 5, minCols: 6, maxCols: 12, minRows: 5, maxRows: 7 },
+  obs: { colSpan: 6, rowSpan: 4, minCols: 6, maxCols: 12, minRows: 3, maxRows: 5 },
+  textaspa: { colSpan: 6, rowSpan: 4, minCols: 4, maxCols: 12, minRows: 2, maxRows: 5 },
   forecast: { colSpan: 6, rowSpan: 5, minCols: 4, maxCols: 12, minRows: 3, maxRows: 7 },
-  warnings: { colSpan: 8, rowSpan: 3, minCols: 6, maxCols: 12, minRows: 3, maxRows: 6 },
+  warnings: { colSpan: 6, rowSpan: 3, minCols: 6, maxCols: 12, minRows: 3, maxRows: 6 },
   moon: { colSpan: 4, rowSpan: 4, minCols: 4, maxCols: 8, minRows: 4, maxRows: 5 },
-  tides: { colSpan: 4, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
+  tides: { colSpan: 4, rowSpan: 3, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
   quakes: { colSpan: 8, rowSpan: 5, minCols: 6, maxCols: 12, minRows: 5, maxRows: 5 },
-  traffic: { colSpan: 4, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
+  traffic: { colSpan: 8, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
 };
 
+const DEFAULT_PANEL_ORDER: PanelKey[] = ['obs', 'forecast', 'textaspa', 'warnings', 'moon', 'quakes', 'tides', 'traffic'];
 const MOBILE_LAYOUT = window.matchMedia('(max-width: 700px)');
+const TEXTASPA_SPLIT_LAYOUT_KEY = 'vedurstod:migration:textaspa-split-layout';
 
 function isPanelKey(key: string | undefined): key is PanelKey {
   return Boolean(key && key in PANELS);
@@ -67,6 +72,38 @@ function clampNumber(value: number, min: number, max: number): number {
 function defaultPanelLayout(key: PanelKey): PanelLayout {
   const bounds = PANEL_BOUNDS[key];
   return { colSpan: bounds.colSpan, rowSpan: bounds.rowSpan, minimized: false };
+}
+
+function normalizePanelOrder(order: string[]): PanelKey[] {
+  const seen = new Set<PanelKey>();
+  const normalized: PanelKey[] = [];
+  for (const key of order) {
+    if (!isPanelKey(key) || seen.has(key)) continue;
+    seen.add(key);
+    normalized.push(key);
+  }
+  for (const key of DEFAULT_PANEL_ORDER) {
+    if (!seen.has(key)) normalized.push(key);
+  }
+  return normalized;
+}
+
+function getPanelOrder(): PanelKey[] {
+  return normalizePanelOrder(tabState.panelOrder);
+}
+
+function currentDomPanelOrder(): PanelKey[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('[data-panel]'))
+    .map((node) => node.dataset.panel)
+    .filter(isPanelKey);
+}
+
+function isDefaultPanelOrder(order: PanelKey[]): boolean {
+  return order.length === DEFAULT_PANEL_ORDER.length && order.every((key, index) => key === DEFAULT_PANEL_ORDER[index]);
+}
+
+function setPanelOrder(order: PanelKey[]) {
+  tabState.panelOrder = isDefaultPanelOrder(order) ? [] : order;
 }
 
 function clampPanelLayout(key: PanelKey, layout: PanelLayout): PanelLayout {
@@ -97,6 +134,22 @@ function buildContext(station: Station): PanelContext {
 
 const tabState: TabsState = loadTabs();
 let activeIntervals: number[] = [];
+let layoutEditUnlocked = false;
+
+try {
+  if (localStorage.getItem(TEXTASPA_SPLIT_LAYOUT_KEY) !== '1') {
+    if (tabState.panelLayout.obs?.rowSpan && tabState.panelLayout.obs.rowSpan >= 5) {
+      tabState.panelLayout.obs = { ...tabState.panelLayout.obs, rowSpan: 3 };
+    }
+    if (tabState.panelLayout.textaspa?.rowSpan && tabState.panelLayout.textaspa.rowSpan > 2) {
+      tabState.panelLayout.textaspa = { ...tabState.panelLayout.textaspa, rowSpan: 2 };
+    }
+    localStorage.setItem(TEXTASPA_SPLIT_LAYOUT_KEY, '1');
+    saveTabs(tabState);
+  }
+} catch {
+  // Keep rendering with in-memory defaults if storage is unavailable.
+}
 
 function getPanelLayout(key: PanelKey): PanelLayout {
   return clampPanelLayout(key, tabState.panelLayout[key] ?? defaultPanelLayout(key));
@@ -104,6 +157,23 @@ function getPanelLayout(key: PanelKey): PanelLayout {
 
 function setPanelLayout(key: PanelKey, layout: PanelLayout) {
   tabState.panelLayout[key] = clampPanelLayout(key, layout);
+}
+
+function isLayoutEditUnlocked(): boolean {
+  return layoutEditUnlocked === true;
+}
+
+function setLayoutEditUnlocked(unlocked: boolean) {
+  layoutEditUnlocked = unlocked;
+  document.body.dataset.layoutEdit = unlocked ? 'true' : 'false';
+
+  const lockBtn = document.getElementById('panel-layout-lock') as HTMLButtonElement | null;
+  if (!lockBtn) return;
+  lockBtn.innerHTML = unlocked ? ICON_UNLOCK : ICON_LOCK;
+  lockBtn.title = unlocked ? 'Læsa breytingum á viðmóti' : 'Opna breytingar á viðmóti';
+  lockBtn.setAttribute('aria-label', lockBtn.title);
+  lockBtn.setAttribute('aria-pressed', String(unlocked));
+  lockBtn.classList.toggle('tabstrip__layout-lock--open', unlocked);
 }
 
 function applyPanelLayout(node: HTMLElement, key: PanelKey) {
@@ -140,6 +210,23 @@ function applyPanelLayoutToMountedPanels() {
   }
 }
 
+function applyPanelOrderToDom() {
+  const grid = document.querySelector<HTMLElement>('.console__grid');
+  if (!grid) return;
+  const customOrder = tabState.panelOrder.length > 0;
+  const nodes = new Map(
+    Array.from(grid.querySelectorAll<HTMLElement>('[data-panel]'))
+      .filter((node) => isPanelKey(node.dataset.panel))
+      .map((node) => [node.dataset.panel as PanelKey, node]),
+  );
+  getPanelOrder().forEach((key, index) => {
+    const node = nodes.get(key);
+    if (!node) return;
+    grid.append(node);
+    node.style.order = customOrder ? String(index + 1) : '';
+  });
+}
+
 interface ResizeState {
   key: PanelKey;
   node: HTMLElement;
@@ -153,6 +240,16 @@ interface ResizeState {
 }
 
 let resizeState: ResizeState | null = null;
+
+interface DragState {
+  key: PanelKey;
+  node: HTMLElement;
+  startX: number;
+  startY: number;
+  moved: boolean;
+}
+
+let dragState: DragState | null = null;
 
 function onPanelResize(ev: PointerEvent) {
   if (!resizeState) return;
@@ -181,7 +278,7 @@ function stopPanelResize() {
 }
 
 function startPanelResize(ev: PointerEvent, key: PanelKey, node: HTMLElement) {
-  if (ev.button !== 0 || MOBILE_LAYOUT.matches || getPanelLayout(key).minimized) return;
+  if (!isLayoutEditUnlocked() || ev.button !== 0 || MOBILE_LAYOUT.matches || getPanelLayout(key).minimized) return;
   const grid = node.parentElement;
   if (!grid) return;
 
@@ -213,11 +310,97 @@ function startPanelResize(ev: PointerEvent, key: PanelKey, node: HTMLElement) {
   window.addEventListener('pointercancel', stopPanelResize, { once: true });
 }
 
+function persistCurrentPanelOrder() {
+  setPanelOrder(currentDomPanelOrder());
+  persist();
+  applyPanelOrderToDom();
+}
+
+function movePanelBy(key: PanelKey, delta: number) {
+  if (!isLayoutEditUnlocked()) return;
+  const order = currentDomPanelOrder();
+  const index = order.indexOf(key);
+  const nextIndex = Math.min(Math.max(index + delta, 0), order.length - 1);
+  if (index < 0 || nextIndex === index) return;
+  order.splice(index, 1);
+  order.splice(nextIndex, 0, key);
+  setPanelOrder(order);
+  persist();
+  applyPanelOrderToDom();
+}
+
+function onPanelDrag(ev: PointerEvent) {
+  if (!dragState) return;
+  const dx = ev.clientX - dragState.startX;
+  const dy = ev.clientY - dragState.startY;
+  if (!dragState.moved && Math.hypot(dx, dy) < 4) return;
+  dragState.moved = true;
+  dragState.node.classList.add('panel--dragging');
+  document.body.classList.add('panel-drag-active');
+
+  const hit = document.elementFromPoint(ev.clientX, ev.clientY);
+  const target = hit?.closest<HTMLElement>('[data-panel]');
+  if (!target || target === dragState.node || !isPanelKey(target.dataset.panel)) return;
+
+  const targetRect = target.getBoundingClientRect();
+  const before =
+    ev.clientY < targetRect.top + targetRect.height / 2 ||
+    (Math.abs(ev.clientY - (targetRect.top + targetRect.height / 2)) < 12 &&
+      ev.clientX < targetRect.left + targetRect.width / 2);
+  target.parentElement?.insertBefore(dragState.node, before ? target : target.nextSibling);
+}
+
+function stopPanelDrag() {
+  if (!dragState) return;
+  const { node, moved } = dragState;
+  node.classList.remove('panel--dragging');
+  document.body.classList.remove('panel-drag-active');
+  window.removeEventListener('pointermove', onPanelDrag);
+  window.removeEventListener('pointerup', stopPanelDrag);
+  window.removeEventListener('pointercancel', stopPanelDrag);
+  if (moved) persistCurrentPanelOrder();
+  dragState = null;
+}
+
+function startPanelDrag(ev: PointerEvent, key: PanelKey, node: HTMLElement) {
+  if (!isLayoutEditUnlocked() || ev.button !== 0 || MOBILE_LAYOUT.matches) return;
+  ev.preventDefault();
+  dragState = {
+    key,
+    node,
+    startX: ev.clientX,
+    startY: ev.clientY,
+    moved: false,
+  };
+  window.addEventListener('pointermove', onPanelDrag);
+  window.addEventListener('pointerup', stopPanelDrag, { once: true });
+  window.addEventListener('pointercancel', stopPanelDrag, { once: true });
+}
+
 function attachPanelControls(node: HTMLElement, key: PanelKey) {
   const header = node.querySelector<HTMLElement>('.panel__header');
   if (header && !header.querySelector('[data-panel-minimize]')) {
     const actions = document.createElement('div');
     actions.className = 'panel__actions';
+
+    const drag = document.createElement('button');
+    drag.type = 'button';
+    drag.className = 'panel__drag';
+    drag.title = 'Færa panel';
+    drag.setAttribute('aria-label', 'Færa panel');
+    drag.addEventListener('pointerdown', (ev) => startPanelDrag(ev, key, node));
+    drag.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        movePanelBy(key, -1);
+        drag.focus();
+      } else if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        movePanelBy(key, 1);
+        drag.focus();
+      }
+    });
+    header.prepend(drag);
 
     const minimize = document.createElement('button');
     minimize.type = 'button';
@@ -306,6 +489,7 @@ function applyActiveTab() {
   const station = activeStation();
   paintForStation(station);
   teardownPanels();
+  applyPanelOrderToDom();
   mountPanels(buildContext(station));
   renderTabstrip();
 }
@@ -622,16 +806,27 @@ function wirePresetIo() {
 }
 
 function wirePanelLayoutControls() {
+  const lockBtn = document.getElementById('panel-layout-lock');
+  if (lockBtn) {
+    setLayoutEditUnlocked(false);
+    lockBtn.onclick = () => setLayoutEditUnlocked(!isLayoutEditUnlocked());
+  }
+
   const resetBtn = document.getElementById('panel-layout-reset');
   if (resetBtn) {
-    resetBtn.innerHTML = `${ICON_RESET_PANEL}<span>Endursetja viðmót</span>`;
+    resetBtn.innerHTML = ICON_RESET_PANEL;
     resetBtn.addEventListener('click', () => {
       tabState.panelLayout = {};
+      tabState.panelOrder = [];
       persist();
+      applyPanelOrderToDom();
       applyPanelLayoutToMountedPanels();
     });
   }
-  MOBILE_LAYOUT.addEventListener('change', applyPanelLayoutToMountedPanels);
+  MOBILE_LAYOUT.addEventListener('change', () => {
+    applyPanelOrderToDom();
+    applyPanelLayoutToMountedPanels();
+  });
 }
 
 function startClock() {

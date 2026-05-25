@@ -28,3 +28,15 @@ export const ICON_RESET_PANEL = `<svg viewBox="0 0 24 24" width="16" height="16"
   <path d="M5 18h5" />
   <path d="M5 15h3" />
 </svg>`;
+
+export const ICON_LOCK = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+  <rect x="6" y="10" width="12" height="10" rx="1" />
+  <path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10" />
+  <path d="M12 14v2.5" />
+</svg>`;
+
+export const ICON_UNLOCK = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+  <rect x="6" y="10" width="12" height="10" rx="1" />
+  <path d="M15.5 10V7.5a3.5 3.5 0 0 0-6.8-1.2" />
+  <path d="M12 14v2.5" />
+</svg>`;

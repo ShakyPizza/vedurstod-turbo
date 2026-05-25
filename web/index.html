@@ -41,7 +41,8 @@
         <button type="button" class="tabstrip__add" id="tabstrip-add" title="Bæta við flipa" aria-label="Bæta við flipa"></button>
         <div class="tabstrip__sep" aria-hidden="true"></div>
         <div class="tabstrip__tools">
-          <button type="button" class="tabstrip__reset" id="panel-layout-reset" title="Endursetja viðmót" aria-label="Endursetja viðmót"></button>
+          <button type="button" class="tabstrip__tool tabstrip__layout-lock" id="panel-layout-lock" title="Opna breytingar á viðmóti" aria-label="Opna breytingar á viðmóti" aria-pressed="false"></button>
+          <button type="button" class="tabstrip__reset" id="panel-layout-reset" title="Endurstilla viðmót" aria-label="Endurstilla viðmót"></button>
           <button type="button" class="tabstrip__tool" id="preset-export" title="Vista forstillingu (.json)" aria-label="Vista forstillingu"></button>
           <button type="button" class="tabstrip__tool" id="preset-import" title="Hlaða forstillingu (.json)" aria-label="Hlaða forstillingu"></button>
           <input type="file" id="preset-file" accept="application/json,.json" hidden />
@@ -50,6 +51,7 @@
       <main class="console__grid">
         <section class="panel panel--obs" data-panel="obs"></section>
         <section class="panel panel--forecast" data-panel="forecast"></section>
+        <section class="panel panel--textaspa" data-panel="textaspa"></section>
         <section class="panel panel--warnings" data-panel="warnings"></section>
         <section class="panel panel--moon" data-panel="moon"></section>
         <section class="panel panel--placeholder" data-panel="quakes"></section>

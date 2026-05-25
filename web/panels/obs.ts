@@ -16,24 +16,6 @@ interface Obs {
   };
 }
 
-interface Textaspa {
-  title: string;
-  createdAt: string | null;
-  paragraphs: string[];
-}
-
-// Shown when vedur.is publishes no hugleiðingar — gives the empty
-// screen something to say in the spirit of the meteorologist's column.
-const TEXTASPA_FALLBACKS = [
-  'Veðurfræðingur er að fylgjast með málningu þorna og hefur ekki tíma til hugleiðslu.',
-  'Veðurfræðingur heyrir grasið vaxa en hefur ekki leitt hugann að veðri í dag.',
-  'Yfir landinu er hæð lengst uppi og veðurfræðingur kúrir þar með henni.',
-  'Fullkomin áttleysa í dag, drengur. Veðurfræðingur hefur ekki leitt hugann að veðrinu vegna heyanna.',
-  'Brakandi þurrkur og allir úti á túni. Veðurfræðingur hefur ekki leitt hugann að veðri í dag vegna heyanna.',
-  'Vinsamlegast dokið við, veðurfræðingur er að hugleiða í þessum rituðu orðum. Ef ekkert heyrist frá honum fyrir kaffi má hringja á björgunarsveit.',
-  'Vakthafandi veðurfræðingur er að hita upp ábrystir sem konan útbjó fyrr í dag. Hugleiðingar kynntar síðar.'
-];
-
 const DIRS: Record<string, number> = {
   N: 0,
   NNA: 22.5,
@@ -211,17 +193,13 @@ export function obsPanel(): Panel {
   let stationLabel: HTMLElement;
   let timestampLabel: HTMLElement;
   let statusLamp: HTMLElement;
-  let textaspaBody: HTMLElement;
-  let textaspaTimestamp: HTMLElement;
   let statusText: Text;
   let obsUrl = '/api/obs';
-  let textaspaUrl = '/api/textaspa';
 
   return {
     intervalMs: 15 * 60 * 1000,
     mount(el_root, ctx) {
       obsUrl = ctx.apiUrl('obs');
-      textaspaUrl = ctx.apiUrl('textaspa');
       root = el_root;
       root.innerHTML = '';
 
@@ -269,18 +247,6 @@ export function obsPanel(): Panel {
 
       body.append(windCol, right);
 
-      // Textaspa section
-      const textaspaSection = el('div', { class: 'textaspa' });
-      const textaspaHeader = el(
-        'div',
-        { class: 'textaspa__header' },
-        el('span', { class: 'textaspa__title' }, 'HUGLEIÐINGAR VEÐURFRÆÐINGS'),
-      );
-      textaspaTimestamp = el('span', { class: 'textaspa__timestamp' }, '');
-      textaspaHeader.append(textaspaTimestamp);
-      textaspaBody = el('div', { class: 'textaspa__body' });
-      textaspaSection.append(textaspaHeader, textaspaBody);
-
       stationLabel = el('span', { class: 'panel__footer-label' }, ctx.station.name.toUpperCase());
       timestampLabel = el('span', { class: 'panel__footer-value', id: 'obs-ts' }, '—');
       const footer = el(
@@ -292,7 +258,7 @@ export function obsPanel(): Panel {
         timestampLabel,
       );
 
-      root.append(header, body, textaspaSection, footer);
+      root.append(header, body, footer);
     },
     async refresh() {
       if (!gauge) return;
@@ -349,32 +315,6 @@ export function obsPanel(): Panel {
         statusLamp.classList.add('status-lamp--alert');
       }
 
-      try {
-        const spa = await getJson<Textaspa>(textaspaUrl);
-        textaspaBody.innerHTML = '';
-        const paragraphs = spa.paragraphs.filter((p) => p.trim().length > 0);
-        if (paragraphs.length === 0) {
-          const phrase = TEXTASPA_FALLBACKS[Math.floor(Math.random() * TEXTASPA_FALLBACKS.length)];
-          textaspaBody.append(el('p', { class: 'textaspa__para textaspa__para--fallback' }, phrase));
-        } else {
-          for (const para of paragraphs) {
-            textaspaBody.append(el('p', { class: 'textaspa__para' }, para));
-          }
-        }
-        if (spa.createdAt) {
-          const fmt3 = new Intl.DateTimeFormat('is-IS', {
-            hour: '2-digit',
-            minute: '2-digit',
-            day: '2-digit',
-            month: '2-digit',
-            hour12: false,
-            timeZone: 'Atlantic/Reykjavik',
-          });
-          textaspaTimestamp.textContent = fmt3.format(new Date(spa.createdAt));
-        }
-      } catch (err) {
-        console.warn('textaspa refresh failed', err);
-      }
     },
   };
 }

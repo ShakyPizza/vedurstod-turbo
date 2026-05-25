@@ -11,6 +11,7 @@ export interface TabsState {
   stations: Station[];
   activeIndex: number;
   panelLayout: PanelLayouts;
+  panelOrder: string[];
 }
 
 export interface PresetFile {
@@ -74,6 +75,11 @@ function pickPanelLayouts(v: unknown): PanelLayouts {
   return layouts;
 }
 
+function pickPanelOrder(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((key): key is string => typeof key === 'string');
+}
+
 function pickStation(o: Record<string, unknown>): Station {
   const s: Station = {
     id: o.id as number,
@@ -89,7 +95,12 @@ function clamp(state: TabsState): TabsState {
   const stations = state.stations.slice(0, MAX_TABS);
   if (stations.length === 0) stations.push({ ...DEFAULT_STATION });
   const activeIndex = Math.min(Math.max(0, state.activeIndex | 0), stations.length - 1);
-  return { stations, activeIndex, panelLayout: pickPanelLayouts(state.panelLayout) };
+  return {
+    stations,
+    activeIndex,
+    panelLayout: pickPanelLayouts(state.panelLayout),
+    panelOrder: pickPanelOrder(state.panelOrder),
+  };
 }
 
 function migrateLegacy(): TabsState | null {
@@ -102,6 +113,7 @@ function migrateLegacy(): TabsState | null {
       stations: [pickStation(parsed as unknown as Record<string, unknown>)],
       activeIndex: 0,
       panelLayout: {},
+      panelOrder: [],
     };
   } catch {
     return null;
@@ -122,6 +134,7 @@ export function loadTabs(): TabsState {
             stations,
             activeIndex: typeof parsed.activeIndex === 'number' ? parsed.activeIndex : 0,
             panelLayout: pickPanelLayouts(parsed.panelLayout),
+            panelOrder: pickPanelOrder(parsed.panelOrder),
           });
         }
       }
@@ -134,7 +147,7 @@ export function loadTabs(): TabsState {
     saveTabs(migrated);
     return migrated;
   }
-  return { stations: [{ ...DEFAULT_STATION }], activeIndex: 0, panelLayout: {} };
+  return { stations: [{ ...DEFAULT_STATION }], activeIndex: 0, panelLayout: {}, panelOrder: [] };
 }
 
 export function saveTabs(state: TabsState): void {
