@@ -9,3 +9,5 @@ dist/
 CLAUDE.md
 plan.md
 .claude/*
+.playwright-cli/*
+output/*
