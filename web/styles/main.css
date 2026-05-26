@@ -1612,25 +1612,9 @@ body.panel-drag-active * {
   grid-template-rows: auto minmax(0, 1fr);
   gap: 4px 10px;
   align-content: start;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   min-height: 0;
   flex: 1;
-  padding-right: 4px;
-}
-
-.quake-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.quake-list::-webkit-scrollbar-track {
-  background: #0c0907;
-}
-
-.quake-list::-webkit-scrollbar-thumb {
-  background: #3a3028;
-  border: 1px solid #0c0907;
-  border-radius: 4px;
 }
 
 .quake-list__label,
@@ -1640,16 +1624,10 @@ body.panel-drag-active * {
 
 .quake-list__column {
   display: grid;
-  grid-auto-rows: minmax(42px, max-content);
+  grid-auto-rows: minmax(38px, max-content);
   gap: 4px;
   align-content: start;
   min-width: 0;
-}
-
-@media (max-width: 1100px) {
-  .quake-list {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .quake-list__empty {
@@ -1666,12 +1644,12 @@ body.panel-drag-active * {
 
 .quake-row {
   display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 10px;
+  grid-template-columns: 48px 1fr;
+  gap: 8px;
   align-items: center;
   box-sizing: border-box;
-  min-height: 42px;
-  padding: 6px 10px;
+  min-height: 38px;
+  padding: 4px 8px;
   background: #14110d;
   border: 1px solid #0a0a0a;
   border-radius: 4px;
@@ -1682,7 +1660,7 @@ body.panel-drag-active * {
 
 .quake-row__mag {
   font-family: 'VT323', monospace;
-  font-size: 26px;
+  font-size: 24px;
   text-align: center;
   letter-spacing: 0.02em;
   color: var(--crt-amber);
