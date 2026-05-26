@@ -24,10 +24,18 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
 });
 
 const NEW_QUAKE_BLINK_MS = 10 * 60 * 1000;
+const RECENT_QUAKE_WINDOW_MS = 48 * 60 * 60 * 1000;
+const MAX_RECENT_QUAKES = 16;
 
 function quakeTime(q: Quake): number {
   const t = new Date(q.time).getTime();
   return Number.isFinite(t) ? t : 0;
+}
+
+function isRecentQuake(q: Quake, now: Date): boolean {
+  const t = quakeTime(q);
+  const age = now.getTime() - t;
+  return t > 0 && age >= 0 && age <= RECENT_QUAKE_WINDOW_MS;
 }
 
 function timeAgo(iso: string, now: Date): string {
@@ -119,9 +127,11 @@ export function quakesPanel(): Panel {
       try {
         const data = await getJson<QuakesResponse>('/api/quakes');
         const now = new Date();
-        const quakes = (data.quakes ?? []).filter(
-          (q) => Number.isFinite(q.magnitude) && q.magnitude >= 1,
-        );
+        const quakes = (data.quakes ?? [])
+          .filter(
+            (q) => Number.isFinite(q.magnitude) && q.magnitude >= 1 && isRecentQuake(q, now),
+          )
+          .sort((a, b) => quakeTime(b) - quakeTime(a));
 
         const visibleIds = new Set<string>();
         for (const q of quakes) {
@@ -136,12 +146,11 @@ export function quakesPanel(): Panel {
           }
         }
 
-        const featured = quakes
-          .filter((q) => q.magnitude >= 3)
-          .sort((a, b) => quakeTime(b) - quakeTime(a))[0];
+        const featured = quakes.filter((q) => q.magnitude >= 3)[0];
 
         const recent = quakes
-          .filter((q) => !featured || q.id !== featured.id);
+          .filter((q) => !featured || q.id !== featured.id)
+          .slice(0, MAX_RECENT_QUAKES);
         const recentSplit = Math.ceil(recent.length / 2);
         const recentColumns = [recent.slice(0, recentSplit), recent.slice(recentSplit)];
 
