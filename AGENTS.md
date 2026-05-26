@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## What this is
 
-**Veðurstöð Turbo** — an Icelandic weather dashboard styled like a 1960s–70s industrial control panel. The repo has a plain Node server, a Vite + TypeScript frontend, and two supported deployment paths: Raspberry Pi + systemd and `traeficvm` + Docker + Traefik.
+**Veðurstöð Turbo** — an Icelandic weather dashboard styled like a 1960s–70s industrial control panel. The repo has a plain Node server, a Vite + TypeScript frontend, and one supported deployment path: `traeficvm` + Docker + Traefik.
 
 ## Commands
 
@@ -49,9 +49,8 @@ Three files + one registration:
 
 Placeholder slots (`SJÁVARFÖLL`, `SKJÁLFTAR`, `UMFERÐ`) are already in `index.html`.
 
-## Deployment paths
+## Deployment path
 
-- **Raspberry Pi / Tailnet**: `systemd/` + `scripts/deploy-pi.sh`
 - **TraefikVM / Docker**: `Dockerfile`, `.github/workflows/deploy.yml`, and `scripts/deploy-traefikvm.sh`
 
 ### TraefikVM deployment — critical facts

@@ -1,6 +1,6 @@
 # Veðurstöð Turbo
 
-A personal weather console for any Veðurstofa Íslands weather station, styled after 1960s–70s industrial control panels. Runs on a Raspberry Pi on a private Tailscale tailnet. Default station is **Seltjarnarnes Suðurnes** (`1471`) but any automatic station can be picked at runtime from the browser.
+A weather console for any Veðurstofa Íslands weather station, styled after 1960s–70s industrial control panels. Default station is **Seltjarnarnes Suðurnes** (`1471`) but any automatic station can be picked at runtime from the browser.
 
 ## What it shows
 
@@ -17,7 +17,7 @@ Labels and weather text are in Icelandic throughout.
 
 - **Server** — Node 20+ (zero-framework ESM, one dependency for XML parsing). Proxies and caches `xmlweather.vedur.is` and scrapes the embedded CAP JSON from the vedur.is warnings page. Serves the built frontend on the same port.
 - **Frontend** — Vite + TypeScript, no UI framework. Each panel is a self-contained module implementing a tiny `Panel` contract, making new data streams a drop-in addition.
-- **Deploy** — two supported paths: Raspberry Pi + systemd polling for a Tailnet-only install, and Docker + Traefik on `traeficvm` with a self-hosted GitHub Actions runner.
+- **Deploy** — Docker + Traefik on `traeficvm`, with a self-hosted GitHub Actions runner for automatic deploys.
 
 ## Choosing a weather station
 
@@ -80,10 +80,6 @@ sudo /opt/vedurstod-turbo/scripts/deploy-traefikvm.sh
 3. Push to `main` — the workflow in `.github/workflows/deploy.yml` triggers automatically.
 
 No secrets or SSH keys are needed since the runner executes directly on the server.
-
-## Deploying on a Raspberry Pi
-
-The Pi path uses `scripts/deploy-pi.sh` plus the units in `systemd/`. See [`architecture.md`](./architecture.md) for the full data flow, deployment steps, and the auto-deploy loop.
 
 ## Adding a new data stream
 

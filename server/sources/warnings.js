@@ -85,7 +85,7 @@ function pickEventCode(info, name) {
 
 async function load(lat, lon) {
   const res = await fetch(WARNINGS_URL, {
-    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+tailnet personal dashboard)' },
+    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+weather dashboard)' },
   });
   if (!res.ok) throw new Error(`vedur.is warnings ${res.status}`);
   const html = await res.text();
