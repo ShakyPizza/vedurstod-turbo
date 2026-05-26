@@ -15,7 +15,7 @@ export async function fetchXml(params) {
   const url = new URL(XML_BASE);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url, {
-    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+tailnet personal dashboard)' },
+    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+weather dashboard)' },
   });
   if (!res.ok) throw new Error(`vedur.is ${res.status} ${res.statusText}`);
   const text = await res.text();

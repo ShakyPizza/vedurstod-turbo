@@ -4,7 +4,7 @@ const STODVAR_INDEX = 'https://www.vedur.is/vedur/stodvar/';
 const CATALOG_TTL = 24 * 60 * 60 * 1000;
 const STATION_TTL = 24 * 60 * 60 * 1000;
 
-const UA = 'vedurstod-turbo/0.1 (+tailnet personal dashboard)';
+const UA = 'vedurstod-turbo/0.1 (+weather dashboard)';
 
 async function fetchHtml(url) {
   const res = await fetch(url, { headers: { 'user-agent': UA } });

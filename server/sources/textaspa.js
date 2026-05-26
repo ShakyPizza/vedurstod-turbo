@@ -26,7 +26,7 @@ async function load() {
   url.searchParams.set('ids', String(HUGINN_ID));
 
   const res = await fetch(url, {
-    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+tailnet personal dashboard)' },
+    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+weather dashboard)' },
   });
   if (!res.ok) throw new Error(`vedur.is ${res.status} ${res.statusText}`);
   const xml = await res.text();

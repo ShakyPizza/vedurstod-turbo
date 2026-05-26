@@ -1,6 +1,6 @@
 # Veðurstöð Turbo — architecture
 
-Veðurstöð Turbo is a weather dashboard for Icelandic automatic weather stations. The repo contains one Node server, one Vite frontend, and two supported deployment paths: Raspberry Pi + systemd for a Tailnet-only install, and Docker + Traefik on `traeficvm`.
+Veðurstöð Turbo is a weather dashboard for Icelandic automatic weather stations. The repo contains one Node server, one Vite frontend, and one supported deployment path: Docker + Traefik on `traeficvm`.
 
 ## High-level shape
 
@@ -46,9 +46,7 @@ browser
 │       ├── moon.ts
 │       └── placeholder.ts
 ├── scripts/
-│   ├── deploy-pi.sh
 │   └── deploy-traefikvm.sh
-├── systemd/
 ├── Dockerfile
 └── docker-compose.yml
 ```
@@ -131,13 +129,6 @@ npm start
 ```
 
 ## Deployment
-
-### Raspberry Pi / Tailnet
-
-- systemd units live in `systemd/`
-- the polling deploy script is `scripts/deploy-pi.sh`
-- `vedurstod-turbo-deploy.timer` runs every 60 seconds
-- when `origin/main` changes, the deploy script resets to the remote head, optionally runs `npm ci`, builds, and restarts the user service
 
 ### TraefikVM / Docker
 
