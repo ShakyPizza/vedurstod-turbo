@@ -1191,6 +1191,19 @@ body.panel-drag-active * {
 
 .panel__body--warnings {
   gap: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-color: #3d342d transparent;
+}
+
+.panel__body--warnings::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel__body--warnings::-webkit-scrollbar-thumb {
+  background: #3d342d;
+  border-radius: 4px;
 }
 
 .warnings__subheader {
