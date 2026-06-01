@@ -26,6 +26,8 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
 const NEW_QUAKE_BLINK_MS = 10 * 60 * 1000;
 const RECENT_QUAKE_WINDOW_MS = 48 * 60 * 60 * 1000;
 const MAX_RECENT_QUAKES = 16;
+const MAX_RECENT_QUAKES_MOBILE = 8;
+const MOBILE_QUERY = '(max-width: 700px)';
 
 function quakeTime(q: Quake): number {
   const t = new Date(q.time).getTime();
@@ -93,6 +95,7 @@ export function quakesPanel(): Panel {
   let body: HTMLElement;
   let footerCount: HTMLElement;
   let footerStamp: HTMLElement;
+  let mobileQuery: MediaQueryList | null = null;
   const firstSeen = new Map<string, number>();
   let hasLoaded = false;
 
@@ -114,6 +117,7 @@ export function quakesPanel(): Panel {
       );
 
       body = el('div', { class: 'panel__body panel__body--quakes' });
+      mobileQuery = window.matchMedia(MOBILE_QUERY);
 
       footerCount = el('span', { class: 'panel__footer-value' }, '—');
       footerStamp = el('span', { class: 'panel__footer-value' }, '—');
@@ -155,11 +159,14 @@ export function quakesPanel(): Panel {
           null,
         );
 
+        const isMobile = mobileQuery?.matches ?? false;
         const recent = quakes
           .filter((q) => !featured || q.id !== featured.id)
-          .slice(0, MAX_RECENT_QUAKES);
+          .slice(0, isMobile ? MAX_RECENT_QUAKES_MOBILE : MAX_RECENT_QUAKES);
         const recentSplit = Math.ceil(recent.length / 2);
-        const recentColumns = [recent.slice(0, recentSplit), recent.slice(recentSplit)];
+        const recentColumns = isMobile
+          ? [recent]
+          : [recent.slice(0, recentSplit), recent.slice(recentSplit)];
 
         body.innerHTML = '';
 

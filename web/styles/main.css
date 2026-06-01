@@ -1876,6 +1876,7 @@ body.panel-drag-active * {
 
   .console__grid > [data-panel='quakes'] {
     order: 6;
+    grid-row: span 6 !important;
   }
 
   .console__grid > [data-panel='tides'] {
@@ -1913,6 +1914,43 @@ body.panel-drag-active * {
 
   .panel__body--moon {
     grid-template-columns: minmax(0, 160px) 1fr;
+  }
+
+  .panel__body--quakes {
+    gap: 10px;
+  }
+
+  .quake-list {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .quake-list__column {
+    grid-auto-rows: minmax(46px, max-content);
+    gap: 6px;
+  }
+
+  .quake-row {
+    grid-template-columns: 58px minmax(0, 1fr);
+    min-height: 46px;
+    padding: 5px 8px;
+  }
+
+  .quake-featured .quake-row {
+    grid-template-columns: 68px minmax(0, 1fr);
+    min-height: 58px;
+  }
+
+  .quake-row__place {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .quake-row__sub {
+    font-size: 10px;
+    letter-spacing: 0.02em;
   }
 }
 
