@@ -38,6 +38,12 @@ function isRecentQuake(q: Quake, now: Date): boolean {
   return t > 0 && age >= 0 && age <= RECENT_QUAKE_WINDOW_MS;
 }
 
+function largestQuake(a: Quake, b: Quake): Quake {
+  if (b.magnitude > a.magnitude) return b;
+  if (b.magnitude < a.magnitude) return a;
+  return quakeTime(b) > quakeTime(a) ? b : a;
+}
+
 function timeAgo(iso: string, now: Date): string {
   const t = new Date(iso).getTime();
   if (!Number.isFinite(t)) return '—';
@@ -128,9 +134,7 @@ export function quakesPanel(): Panel {
         const data = await getJson<QuakesResponse>('/api/quakes');
         const now = new Date();
         const quakes = (data.quakes ?? [])
-          .filter(
-            (q) => Number.isFinite(q.magnitude) && q.magnitude >= 1 && isRecentQuake(q, now),
-          )
+          .filter((q) => Number.isFinite(q.magnitude) && isRecentQuake(q, now))
           .sort((a, b) => quakeTime(b) - quakeTime(a));
 
         const visibleIds = new Set<string>();
@@ -146,7 +150,10 @@ export function quakesPanel(): Panel {
           }
         }
 
-        const featured = quakes.filter((q) => q.magnitude >= 3)[0];
+        const featured = quakes.reduce<Quake | null>(
+          (largest, q) => (largest ? largestQuake(largest, q) : q),
+          null,
+        );
 
         const recent = quakes
           .filter((q) => !featured || q.id !== featured.id)
@@ -161,7 +168,7 @@ export function quakesPanel(): Panel {
             el(
               'div',
               { class: 'quake-featured' },
-              el('div', { class: 'quake-featured__label' }, 'NÝJASTI ≥ M3.0'),
+              el('div', { class: 'quake-featured__label' }, 'STÆRSTI · 48 KLST'),
               renderRow(featured, now, firstSeen.get(featured.id) ?? quakeTime(featured)),
             ),
           );
@@ -173,7 +180,15 @@ export function quakesPanel(): Panel {
             { class: 'quake-list' },
             el('div', { class: 'quake-list__label' }, 'NÝLEGIR SKJÁLFTAR'),
             ...(recent.length === 0
-              ? [el('p', { class: 'quake-list__empty' }, 'Engir skjálftar á síðustu 48 klst.')]
+              ? [
+                  el(
+                    'p',
+                    { class: 'quake-list__empty' },
+                    featured
+                      ? 'Engir aðrir skjálftar á síðustu 48 klst.'
+                      : 'Engir skjálftar á síðustu 48 klst.',
+                  ),
+                ]
               : recentColumns.map((column) =>
                   el(
                     'div',
