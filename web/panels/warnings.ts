@@ -31,34 +31,8 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
   timeZone: 'Atlantic/Reykjavik',
 });
 
-// Veðurstofan's CAP feed sends `eventCode.alertType` in English even in the
-// Icelandic info block. Keys are lower-cased. Only Wind and Snow storm have
-// been seen in the live feed; the rest are guesses at what IMO may send.
-const ALERT_TYPE_IS: Record<string, string> = {
-  'wind': 'Vindur',
-  'snow storm': 'Snjóstormur',
-  'snowstorm': 'Snjóstormur',
-  'rain': 'Rigning',
-  'heavy rain': 'Mikil rigning',
-  'snow': 'Snjókoma',
-  'heavy snow': 'Mikil snjókoma',
-  'blowing snow': 'Skafrenningur',
-  'freezing rain': 'Frostrigning',
-  'ice': 'Ísing',
-  'icing': 'Ísing',
-  'thunderstorm': 'Þrumuveður',
-  'fog': 'Þoka',
-  'heat': 'Hiti',
-  'cold': 'Kuldi',
-  'sandstorm': 'Sandstormur',
-  'dust storm': 'Moldrok',
-  'avalanche': 'Snjóflóð',
-  'flood': 'Flóð',
-  'coastal flood': 'Sjávarflóð',
-  'high waves': 'Ölduhæð',
-};
-
-// CAP 1.2 severity enum → Icelandic (shown under ALVARLEIKI).
+// CAP severity is English only in the feed, so it is translated here
+// (shown under ALVARLEIKI).
 const SEVERITY_IS: Record<string, string> = {
   extreme: 'Afar mikill',
   severe: 'Mikill',
@@ -67,13 +41,12 @@ const SEVERITY_IS: Record<string, string> = {
   unknown: 'Óþekktur',
 };
 
+// The Icelandic CAP block carries Veðurstofan's own Icelandic name in
+// `event`, e.g. "Veðurviðvörun: Hríð". `alertType` ("Snow storm") is always
+// English, so it is never shown.
 function typeLabel(w: Warning): string {
-  const key = (w.type ?? '').trim().toLowerCase();
-  if (key && ALERT_TYPE_IS[key]) return ALERT_TYPE_IS[key];
-  // Fallback: the Icelandic `event` field, e.g. "Veðurviðvörun: Hríð".
   const ev = (w.event ?? '').replace(/^Veðurviðvörun:\s*/i, '').trim();
-  if (ev) return ev;
-  return 'Viðvörun';
+  return ev || 'Viðvörun';
 }
 
 function severityLabel(w: Warning): string {
