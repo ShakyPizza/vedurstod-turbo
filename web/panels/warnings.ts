@@ -31,6 +31,30 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
   timeZone: 'Atlantic/Reykjavik',
 });
 
+// CAP severity is English only in the feed, so it is translated here
+// (shown under ALVARLEIKI).
+const SEVERITY_IS: Record<string, string> = {
+  extreme: 'Afar mikill',
+  severe: 'Mikill',
+  moderate: 'Talsverður',
+  minor: 'Lítill',
+  unknown: 'Óþekktur',
+};
+
+// The Icelandic CAP block carries Veðurstofan's own Icelandic name in
+// `event`, e.g. "Veðurviðvörun: Hríð". `alertType` ("Snow storm") is always
+// English, so it is never shown.
+function typeLabel(w: Warning): string {
+  const ev = (w.event ?? '').replace(/^Veðurviðvörun:\s*/i, '').trim();
+  return ev || 'Viðvörun';
+}
+
+function severityLabel(w: Warning): string {
+  const key = (w.severity ?? '').trim().toLowerCase();
+  if (!key) return '—';
+  return SEVERITY_IS[key] ?? w.severity!;
+}
+
 function colorClass(w: Warning): string {
   const c = (w.color ?? '').toLowerCase();
   if (c === 'red') return 'lamp--red';
@@ -47,7 +71,7 @@ function buildLamp(w: Warning, near: boolean): HTMLElement {
     el(
       'span',
       { class: 'lamp__body' },
-      el('span', { class: 'lamp__type' }, w.type ?? w.event ?? 'VIÐVÖRUN'),
+      el('span', { class: 'lamp__type' }, typeLabel(w)),
       el('span', { class: 'lamp__headline' }, w.headline ?? ''),
       el('span', { class: 'lamp__areas' }, w.areas.join(' · ')),
     ),
@@ -70,7 +94,7 @@ function buildLamp(w: Warning, near: boolean): HTMLElement {
         el('dt', {}, 'RENNUR ÚT'),
         el('dd', {}, w.expires ? TIME_FMT.format(new Date(w.expires)) : '—'),
         el('dt', {}, 'ALVARLEIKI'),
-        el('dd', {}, w.severity ?? '—'),
+        el('dd', {}, severityLabel(w)),
         el('dt', {}, 'SVÆÐI'),
         el('dd', {}, w.areas.join(', ') || '—'),
       ),
