@@ -66,6 +66,7 @@ function pickInfo(alert) {
   if (!Array.isArray(alert?.info)) return null;
   return (
     alert.info.find((x) => x.language === 'is-IS') ??
+    alert.info.find((x) => !String(x.language ?? '').startsWith('en')) ??
     alert.info[0] ??
     null
   );

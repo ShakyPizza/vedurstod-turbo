@@ -31,6 +31,57 @@ const TIME_FMT = new Intl.DateTimeFormat('is-IS', {
   timeZone: 'Atlantic/Reykjavik',
 });
 
+// Veðurstofan's CAP feed sends `eventCode.alertType` in English even in the
+// Icelandic info block. Keys are lower-cased. Only Wind and Snow storm have
+// been seen in the live feed; the rest are guesses at what IMO may send.
+const ALERT_TYPE_IS: Record<string, string> = {
+  'wind': 'Vindur',
+  'snow storm': 'Snjóstormur',
+  'snowstorm': 'Snjóstormur',
+  'rain': 'Rigning',
+  'heavy rain': 'Mikil rigning',
+  'snow': 'Snjókoma',
+  'heavy snow': 'Mikil snjókoma',
+  'blowing snow': 'Skafrenningur',
+  'freezing rain': 'Frostrigning',
+  'ice': 'Ísing',
+  'icing': 'Ísing',
+  'thunderstorm': 'Þrumuveður',
+  'fog': 'Þoka',
+  'heat': 'Hiti',
+  'cold': 'Kuldi',
+  'sandstorm': 'Sandstormur',
+  'dust storm': 'Moldrok',
+  'avalanche': 'Snjóflóð',
+  'flood': 'Flóð',
+  'coastal flood': 'Sjávarflóð',
+  'high waves': 'Ölduhæð',
+};
+
+// CAP 1.2 severity enum → Icelandic (shown under ALVARLEIKI).
+const SEVERITY_IS: Record<string, string> = {
+  extreme: 'Afar mikill',
+  severe: 'Mikill',
+  moderate: 'Talsverður',
+  minor: 'Lítill',
+  unknown: 'Óþekktur',
+};
+
+function typeLabel(w: Warning): string {
+  const key = (w.type ?? '').trim().toLowerCase();
+  if (key && ALERT_TYPE_IS[key]) return ALERT_TYPE_IS[key];
+  // Fallback: the Icelandic `event` field, e.g. "Veðurviðvörun: Hríð".
+  const ev = (w.event ?? '').replace(/^Veðurviðvörun:\s*/i, '').trim();
+  if (ev) return ev;
+  return 'Viðvörun';
+}
+
+function severityLabel(w: Warning): string {
+  const key = (w.severity ?? '').trim().toLowerCase();
+  if (!key) return '—';
+  return SEVERITY_IS[key] ?? w.severity!;
+}
+
 function colorClass(w: Warning): string {
   const c = (w.color ?? '').toLowerCase();
   if (c === 'red') return 'lamp--red';
@@ -47,7 +98,7 @@ function buildLamp(w: Warning, near: boolean): HTMLElement {
     el(
       'span',
       { class: 'lamp__body' },
-      el('span', { class: 'lamp__type' }, w.type ?? w.event ?? 'VIÐVÖRUN'),
+      el('span', { class: 'lamp__type' }, typeLabel(w)),
       el('span', { class: 'lamp__headline' }, w.headline ?? ''),
       el('span', { class: 'lamp__areas' }, w.areas.join(' · ')),
     ),
@@ -70,7 +121,7 @@ function buildLamp(w: Warning, near: boolean): HTMLElement {
         el('dt', {}, 'RENNUR ÚT'),
         el('dd', {}, w.expires ? TIME_FMT.format(new Date(w.expires)) : '—'),
         el('dt', {}, 'ALVARLEIKI'),
-        el('dd', {}, w.severity ?? '—'),
+        el('dd', {}, severityLabel(w)),
         el('dt', {}, 'SVÆÐI'),
         el('dd', {}, w.areas.join(', ') || '—'),
       ),
