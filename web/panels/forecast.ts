@@ -188,19 +188,22 @@ function buildSkySymbol(sky: Sky): SVGElement {
   const pattern = PATTERNS[sky];
   const cell = 3;
   const r = 1.2;
+  // All dots of one kind go into a single <path> (one circle subpath per
+  // dot). Separate <circle>s, each with its own drop-shadow filter, meant
+  // thousands of filtered nodes across the forecast and made scrolling crawl.
+  let off = '';
+  let on = '';
   for (let y = 0; y < GRID; y++) {
     for (let x = 0; x < GRID; x++) {
-      const on = pattern[y][x] === 'X';
-      root.append(
-        svg('circle', {
-          cx: x * cell + cell / 2,
-          cy: y * cell + cell / 2,
-          r,
-          class: on ? 'sky-symbol__dot sky-symbol__dot--on' : 'sky-symbol__dot',
-        }),
-      );
+      const cx = x * cell + cell / 2;
+      const cy = y * cell + cell / 2;
+      const dot = `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
+      if (pattern[y][x] === 'X') on += dot;
+      else off += dot;
     }
   }
+  if (off) root.append(svg('path', { d: off, class: 'sky-symbol__dot' }));
+  if (on) root.append(svg('path', { d: on, class: 'sky-symbol__dot sky-symbol__dot--on' }));
   return root;
 }
 
