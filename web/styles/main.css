@@ -2534,7 +2534,11 @@ body.panel-drag-active * {
 }
 
 @media (max-width: 700px) {
-  /* The map is wide; on a phone it needs far fewer rows than on a desk. */
+  /* The map is wide; on a phone it takes the full width and far fewer rows
+     than on a desk. */
+  .console__grid > [data-panel='map'] {
+    grid-column: span 12;
+  }
   .console__grid > [data-panel='map']:not(.panel--minimized) {
     grid-row: span 4 !important;
   }
