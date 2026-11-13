@@ -16,6 +16,7 @@ const OSWALD_HREF = 'https://fonts.googleapis.com/css2?family=Oswald:wght@500;60
 // Things 0.8 did not have, so they keep working on the old skin.
 const LEGACY_COMPAT = `
 .console__grid > [data-panel='map'] { display: none; }
+.sundial { display: none; }
 .status-lamp--warn {
   background: var(--lamp-red);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 0 10px var(--lamp-red), 0 0 18px var(--lamp-glow-red);

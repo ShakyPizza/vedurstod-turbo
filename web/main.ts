@@ -11,6 +11,7 @@ import { quakesPanel } from './panels/quakes.ts';
 import { tidesPanel } from './panels/tides.ts';
 import { placeholderPanel } from './panels/placeholder.ts';
 import { mountVersionSwitch } from './version.ts';
+import { mountSundial } from './sundial.ts';
 import { mapPanel } from './panels/map.ts';
 import { DEFAULT_STATION } from './station-config.ts';
 import {
@@ -462,6 +463,8 @@ function mountPanels(ctx: PanelContext) {
 }
 
 let sunTimesInterval: number | null = null;
+const sundialHost = document.getElementById('sundial');
+const sundial = sundialHost ? mountSundial(sundialHost) : null;
 
 function paintForStation(station: Station) {
   const nameEl = document.getElementById('station-name');
@@ -469,6 +472,9 @@ function paintForStation(station: Station) {
   const footerStationIdEl = document.getElementById('footer-station-id');
   if (footerStationIdEl) footerStationIdEl.textContent = ` · STÖÐ ${station.id}`;
 
+  sundial?.setStation(station);
+
+  // Plain sunrise / sunset text, used by the 0.8 skin (1.0 shows the sundial).
   const sunEl = document.getElementById('sun-times');
   if (sunEl) {
     const fmt = new Intl.DateTimeFormat('is-IS', {
