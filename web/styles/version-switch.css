@@ -1,0 +1,146 @@
+/* Version selector popover. Self-contained colours so it looks the same
+   on both skins (0.8 and 1.0). */
+
+#build-slug {
+  all: unset;
+  cursor: pointer;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  letter-spacing: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+#build-slug:hover,
+#build-slug[aria-expanded='true'] {
+  border-color: rgba(245, 154, 28, 0.45);
+  color: #f59a1c;
+}
+
+#build-slug:focus-visible {
+  outline: 2px solid #f59a1c;
+  outline-offset: 2px;
+}
+
+.vswitch {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px 8px;
+  background: linear-gradient(180deg, #2a1915, #1e120f);
+  border: 1px solid #3a2621;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 190, 0.08),
+    0 0 0 1px #000,
+    0 14px 30px rgba(0, 0, 0, 0.6);
+}
+
+.vswitch[hidden] {
+  display: none;
+}
+
+.vswitch__title {
+  font: 11px/1 'Routed Gothic', 'Oswald', sans-serif;
+  letter-spacing: 0.24em;
+  color: #a8957e;
+}
+
+.vswitch__knob {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  border-radius: 6px;
+}
+
+.vswitch__knob:focus-visible {
+  outline: 2px solid #f59a1c;
+  outline-offset: 2px;
+}
+
+.vswitch__svg {
+  display: block;
+  width: 132px;
+  height: auto;
+  overflow: visible;
+}
+
+.vswitch__tick {
+  stroke: #6e5b4b;
+  stroke-width: 2;
+}
+
+.vswitch__pos {
+  font: 18px 'VT323', monospace;
+  fill: #6e5b4b;
+  cursor: pointer;
+  transition: fill 0.2s;
+}
+
+.vswitch__pos--on {
+  fill: #f59a1c;
+  filter: drop-shadow(0 0 4px rgba(245, 140, 20, 0.6));
+}
+
+.vswitch__body {
+  fill: #0d0806;
+  stroke: #000;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.6));
+}
+
+.vswitch__grip {
+  transition: transform 0.28s cubic-bezier(0.5, 1.6, 0.5, 1);
+}
+
+.vswitch__bar {
+  fill: #2b211c;
+  stroke: #4c3b31;
+  stroke-width: 1;
+}
+
+.vswitch__pointer {
+  stroke: #f59a1c;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(245, 140, 20, 0.7));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vswitch__grip {
+    transition: none;
+  }
+}
+
+/* Footer right side: credit, separator, version tag. Lives here so it
+   looks the same on both skins. */
+
+.console__footer {
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.console__footer-right {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px 10px;
+}
+
+.console__footer-credit a {
+  text-decoration: underline dotted;
+  text-decoration-color: rgba(245, 154, 28, 0.45);
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.console__footer-credit a:hover,
+.console__footer-credit a:focus-visible {
+  color: #f59a1c;
+  text-decoration-style: solid;
+}

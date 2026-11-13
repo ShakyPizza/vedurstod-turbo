@@ -37,7 +37,7 @@ export function textaspaPanel(): Panel {
         el('div', { class: 'panel__status' }),
       );
       statusLamp = el('span', { class: 'status-lamp' });
-      statusText = document.createTextNode(' SÆKI');
+      statusText = document.createTextNode('');
       header.querySelector('.panel__status')!.append(statusLamp, statusText);
 
       body = el('div', { class: 'panel__body panel__body--textaspa' });
@@ -80,7 +80,7 @@ export function textaspaPanel(): Panel {
         }
         statusLamp.classList.add('status-lamp--on');
         statusLamp.classList.remove('status-lamp--alert');
-        statusText.data = ' TENGT';
+        statusText.data = '';
       } catch (err) {
         console.warn('textaspa refresh failed', err);
         statusLamp.classList.remove('status-lamp--on');

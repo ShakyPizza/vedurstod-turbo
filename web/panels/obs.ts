@@ -190,7 +190,6 @@ function buildReadout(label: string, id: string, unit: string): HTMLElement {
 export function obsPanel(): Panel {
   let gauge: ReturnType<typeof buildGauge> | null = null;
   let root: HTMLElement;
-  let stationLabel: HTMLElement;
   let timestampLabel: HTMLElement;
   let statusLamp: HTMLElement;
   let statusText: Text;
@@ -206,11 +205,11 @@ export function obsPanel(): Panel {
       const header = el(
         'header',
         { class: 'panel__header' },
-        el('h2', { class: 'panel__title' }, 'VEÐUR NÚNA'),
+        el('h2', { class: 'panel__title' }, 'VEÐURATHUGUN'),
         el('div', { class: 'panel__status' }),
       );
       statusLamp = el('span', { class: 'status-lamp' });
-      statusText = document.createTextNode(' TENGT');
+      statusText = document.createTextNode('');
       header.querySelector('.panel__status')!.append(statusLamp, statusText);
 
       const body = el('div', { class: 'panel__body panel__body--obs' });
@@ -247,13 +246,10 @@ export function obsPanel(): Panel {
 
       body.append(windCol, right);
 
-      stationLabel = el('span', { class: 'panel__footer-label' }, ctx.station.name.toUpperCase());
       timestampLabel = el('span', { class: 'panel__footer-value', id: 'obs-ts' }, '—');
       const footer = el(
         'footer',
         { class: 'panel__footer' },
-        stationLabel,
-        el('span', { class: 'panel__footer-sep' }, '·'),
         el('span', { class: 'panel__footer-label' }, 'MÆLT'),
         timestampLabel,
       );
@@ -274,7 +270,7 @@ export function obsPanel(): Panel {
           data.wind.direction !== null;
         statusLamp.classList.toggle('status-lamp--on', hasReading);
         statusLamp.classList.remove('status-lamp--alert');
-        statusText.data = hasReading ? ' TENGT' : ' ENGIN GÖGN';
+        statusText.data = hasReading ? '' : ' ENGIN GÖGN';
 
         const deg = data.wind.direction ? (DIRS[data.wind.direction] ?? null) : null;
         const cx = 150;
@@ -308,7 +304,6 @@ export function obsPanel(): Panel {
           });
           timestampLabel.textContent = fmt2.format(new Date(data.observedAt));
         }
-        stationLabel.textContent = data.stationName.toUpperCase();
       } catch (err) {
         console.warn('obs refresh failed', err);
         statusLamp.classList.remove('status-lamp--on');

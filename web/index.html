@@ -10,10 +10,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=VT323&family=Oswald:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=VT323&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles/main.css" />
+    <script>
+      // Hide the page until web/version.ts puts the 0.8 skin in place.
+      try {
+        if (localStorage.getItem('vedurstod:version') === '0.8') {
+          document.documentElement.setAttribute('data-skin-pending', '');
+        }
+      } catch (e) {}
+    </script>
+    <style>
+      html[data-skin-pending] body { visibility: hidden; }
+    </style>
   </head>
   <body>
     <div id="console" class="console">
@@ -22,12 +33,12 @@
           <span class="console__brand-line">VEÐURSTÖÐ</span>
           <div class="console__brand-turbo-line">
             <span class="console__brand-line console__brand-line--big">TURBO</span>
-            <span class="console__brand-byline">Grand lausnir, engin vandamál.</span>
           </div>
         </div>
+        <div id="sundial" class="sundial" aria-label="Sólargangur"></div>
         <div class="console__meta">
-          <span class="console__meta-label">SÓLARGANGUR</span>
-          <span class="console__meta-value" id="sun-times">--:-- / --:--</span>
+          <span class="console__meta-label console__sun-text">SÓLARGANGUR</span>
+          <span class="console__meta-value console__sun-text" id="sun-times">--:-- / --:--</span>
           <span class="console__meta-label">STÖÐ</span>
           <button type="button" class="console__station-btn" id="station-btn" title="Breyta stöð">
             <span class="console__meta-value" id="station-name">—</span>
@@ -54,6 +65,7 @@
         <section class="panel panel--forecast" data-panel="forecast"></section>
         <section class="panel panel--textaspa" data-panel="textaspa"></section>
         <section class="panel panel--warnings" data-panel="warnings"></section>
+        <section class="panel panel--map" data-panel="map"></section>
         <section class="panel panel--moon" data-panel="moon"></section>
         <section class="panel panel--placeholder" data-panel="quakes"></section>
         <section class="panel panel--placeholder" data-panel="tides"></section>
@@ -61,7 +73,11 @@
       </main>
       <footer class="console__footer">
         <span class="console__footer-slug" id="footer-station">GÖGN&nbsp;FRÁ&nbsp;<a href="https://www.vedur.is" target="_blank" rel="noopener noreferrer" class="console__footer-link">VEÐURSTOFU&nbsp;ÍSLANDS</a><span id="footer-station-id"></span></span>
-        <span class="console__footer-slug" id="build-slug">v0.8</span>
+        <span class="console__footer-slug console__footer-right">
+          <span class="console__footer-credit">Hannað af <a href="https://x.com/kjassiturbo" target="_blank" rel="noopener noreferrer" class="console__footer-link">Kjartani Magnússyni</a> og Benedikt Orra Péturssyni</span>
+          <span class="console__footer-sep" aria-hidden="true">·</span>
+          <button type="button" class="console__footer-slug" id="build-slug" title="Velja útgáfu" aria-haspopup="dialog" aria-expanded="false">v1.0</button>
+        </span>
       </footer>
     </div>
 

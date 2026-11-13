@@ -10,6 +10,9 @@ import { moonPanel } from './panels/moon.ts';
 import { quakesPanel } from './panels/quakes.ts';
 import { tidesPanel } from './panels/tides.ts';
 import { placeholderPanel } from './panels/placeholder.ts';
+import { mountVersionSwitch } from './version.ts';
+import { mountSundial } from './sundial.ts';
+import { mapPanel } from './panels/map.ts';
 import { DEFAULT_STATION } from './station-config.ts';
 import {
   MAX_TABS,
@@ -30,6 +33,7 @@ const PANELS: Record<string, () => Panel> = {
   forecast: forecastPanel,
   warnings: warningsPanel,
   moon: moonPanel,
+  map: mapPanel,
   tides: tidesPanel,
   quakes: quakesPanel,
   traffic: () => placeholderPanel('UMFERÐ', 'rás ótengd', { label: 'RÁS ÓTENGD', alert: true }),
@@ -51,13 +55,14 @@ const PANEL_BOUNDS: Record<PanelKey, PanelBounds> = {
   textaspa: { colSpan: 6, rowSpan: 4, minCols: 4, maxCols: 12, minRows: 2, maxRows: 5 },
   forecast: { colSpan: 6, rowSpan: 5, minCols: 4, maxCols: 12, minRows: 3, maxRows: 7 },
   warnings: { colSpan: 6, rowSpan: 3, minCols: 6, maxCols: 12, minRows: 3, maxRows: 6 },
+  map: { colSpan: 8, rowSpan: 6, minCols: 6, maxCols: 12, minRows: 4, maxRows: 8 },
   moon: { colSpan: 4, rowSpan: 4, minCols: 4, maxCols: 8, minRows: 4, maxRows: 5 },
   tides: { colSpan: 4, rowSpan: 3, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
   quakes: { colSpan: 8, rowSpan: 5, minCols: 6, maxCols: 12, minRows: 5, maxRows: 5 },
   traffic: { colSpan: 8, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
 };
 
-const DEFAULT_PANEL_ORDER: PanelKey[] = ['obs', 'forecast', 'textaspa', 'warnings', 'moon', 'quakes', 'tides', 'traffic'];
+const DEFAULT_PANEL_ORDER: PanelKey[] = ['obs', 'forecast', 'textaspa', 'warnings', 'map', 'moon', 'tides', 'quakes', 'traffic'];
 const MOBILE_LAYOUT = window.matchMedia('(max-width: 700px)');
 const TEXTASPA_SPLIT_LAYOUT_KEY = 'vedurstod:migration:textaspa-split-layout';
 
@@ -458,6 +463,8 @@ function mountPanels(ctx: PanelContext) {
 }
 
 let sunTimesInterval: number | null = null;
+const sundialHost = document.getElementById('sundial');
+const sundial = sundialHost ? mountSundial(sundialHost) : null;
 
 function paintForStation(station: Station) {
   const nameEl = document.getElementById('station-name');
@@ -465,6 +472,9 @@ function paintForStation(station: Station) {
   const footerStationIdEl = document.getElementById('footer-station-id');
   if (footerStationIdEl) footerStationIdEl.textContent = ` · STÖÐ ${station.id}`;
 
+  sundial?.setStation(station);
+
+  // Plain sunrise / sunset text, used by the 0.8 skin (1.0 shows the sundial).
   const sunEl = document.getElementById('sun-times');
   if (sunEl) {
     const fmt = new Intl.DateTimeFormat('is-IS', {
@@ -852,4 +862,5 @@ document.addEventListener('DOMContentLoaded', () => {
   wirePanelLayoutControls();
   applyActiveTab();
   startClock();
+  mountVersionSwitch();
 });

@@ -1,6 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 
 const XML_BASE = 'https://xmlweather.vedur.is/';
+const FETCH_TIMEOUT_MS = 15 * 1000;
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -16,6 +17,8 @@ export async function fetchXml(params) {
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url, {
     headers: { 'user-agent': 'vedurstod-turbo/0.1 (+weather dashboard)' },
+    // Give up on a hanging vedur.is instead of holding requests open.
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`vedur.is ${res.status} ${res.statusText}`);
   const text = await res.text();

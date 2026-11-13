@@ -152,9 +152,9 @@ export function warningsPanel(): Panel {
         const total = data.nearby.length + data.other.length;
         countLabel.textContent = String(total);
 
-        masterLamp.classList.remove('status-lamp--on', 'status-lamp--alert');
-        if (data.nearby.length > 0) masterLamp.classList.add('status-lamp--alert');
-        else if (total > 0) masterLamp.classList.add('status-lamp--on');
+        // Orange, slowly pulsing lamp while any warning is in effect.
+        masterLamp.classList.remove('status-lamp--on', 'status-lamp--alert', 'status-lamp--warn');
+        if (total > 0) masterLamp.classList.add('status-lamp--warn');
 
         nearBody.innerHTML = '';
         if (data.nearby.length === 0) {
@@ -171,7 +171,7 @@ export function warningsPanel(): Panel {
         }
       } catch (err) {
         console.warn('warnings refresh failed', err);
-        masterLamp.classList.remove('status-lamp--on');
+        masterLamp.classList.remove('status-lamp--on', 'status-lamp--warn');
         masterLamp.classList.add('status-lamp--alert');
       }
     },
