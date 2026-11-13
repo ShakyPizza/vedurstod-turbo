@@ -2801,6 +2801,12 @@ body.panel-drag-active * {
   .map__legend {
     display: none;
   }
+  /* Smaller legend boxes so long titles are not cut off. */
+  .panel__title {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    padding: 4px 8px 3px;
+  }
   .map__detail {
     gap: 12px;
   }
