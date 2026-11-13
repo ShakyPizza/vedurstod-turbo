@@ -56,7 +56,7 @@ browser
 | Endpoint | Purpose | Cache |
 |---|---|---|
 | `/api/obs?station=ID` | current observation data for a station | 10 min |
-| `/api/obs-multi?ids=1;990;…` | temperature and wind for up to 30 stations in one call (map panel) | 10 min |
+| `/api/obs-multi?ids=1;990;…` | temperature and wind for the map stations (fixed server-side list; `ids` only filters it), one upstream call for all | 10 min (2 min after a failure) |
 | `/api/forecast?station=ID&forecastStation=ID` | station forecast from vedur.is | 60 min |
 | `/api/warnings?lat=…&lon=…` | active Icelandic weather warnings near a point | 2 min |
 | `/api/textaspa` | Icelandic text forecast from Hugin | 30 min |

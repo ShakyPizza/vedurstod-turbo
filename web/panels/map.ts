@@ -15,6 +15,8 @@ interface MapStation {
 }
 
 // Main towns around the coast, plus a few highland stations.
+// The server only serves these IDs: keep in step with MAP_STATION_IDS in
+// server/sources/obs.js.
 const MAP_STATIONS: MapStation[] = [
   { id: 1, name: 'Reykjavík', lat: 64.127, lon: -21.902, label: 'e' },
   { id: 990, name: 'Keflavík', lat: 63.985, lon: -22.605, label: 'sw' },

@@ -85,6 +85,7 @@ async function handleApi(req, res, pathname, query) {
       case '/api/obs-multi': {
         const ids = String(query.get('ids') ?? '')
           .split(/[;,]/)
+          .filter((v) => v.trim() !== '')
           .map((v) => Number(v));
         return sendJson(res, 200, await getObservations(ids));
       }
