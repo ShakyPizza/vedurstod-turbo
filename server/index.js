@@ -3,7 +3,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, join, resolve, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { getObservation } from './sources/obs.js';
+import { getObservation, getObservations } from './sources/obs.js';
 import { getForecast } from './sources/forecast.js';
 import { getWarnings } from './sources/warnings.js';
 import { getTextaspa } from './sources/textaspa.js';
@@ -82,6 +82,12 @@ async function handleApi(req, res, pathname, query) {
     switch (pathname) {
       case '/api/obs':
         return sendJson(res, 200, await getObservation(stationId));
+      case '/api/obs-multi': {
+        const ids = String(query.get('ids') ?? '')
+          .split(/[;,]/)
+          .map((v) => Number(v));
+        return sendJson(res, 200, await getObservations(ids));
+      }
       case '/api/forecast':
         return sendJson(res, 200, await getForecast(forecastStationId));
       case '/api/warnings':

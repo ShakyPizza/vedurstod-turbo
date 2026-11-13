@@ -296,7 +296,7 @@ export function forecastPanel(): Panel {
       const header = el('header', { class: 'panel__header' }, el('h2', { class: 'panel__title' }, 'SPÁ'));
       const status = el('div', { class: 'panel__status' });
       statusLamp = el('span', { class: 'status-lamp' });
-      status.append(statusLamp, document.createTextNode('TENGD'));
+      status.append(statusLamp);
       header.append(status);
 
       body = el('div', { class: 'panel__body panel__body--forecast' });
