@@ -1,92 +1,118 @@
 # Veðurstöð Turbo
 
-A weather console for any Veðurstofa Íslands weather station, styled after 1960s–70s industrial control panels. Default station is **Seltjarnarnes Suðurnes** (`1471`) but any automatic station can be picked at runtime from the browser.
+A weather console for Icelandic automatic weather stations, built to look like a 1960s–70s industrial control panel. Version 1.0 is a phosphor console: amber and green phosphor outlines, engraved Routed Gothic lettering, a Bakelite cabinet and pixel-font readouts.
 
-## What it shows
+The default station is **Seltjarnarnes Suðurnes** (`1471`). You can pick any station from the browser. All labels and weather text are in Icelandic. Data comes from [Veðurstofa Íslands](https://www.vedur.is).
 
-- **VEÐUR NÚNA** — current observations from the configured station, on an analog wind compass (main needle for direction + speed, ghost needle for gusts) plus CRT-style readouts for temperature, dew point, humidity, and pressure.
-- **HUGLEIÐINGAR VEÐURFRÆÐINGS** — the latest Icelandic text forecast from Hugin, shown inside the observation panel.
-- **SPÁ** — station-specific forecast out to ~10 days, grouped by day, hourly early then 3-hourly.
-- **VIÐVARANIR** — active Icelandic Met Office weather warnings rendered as warning lamps. Alerts whose polygons cover the station coordinates appear under "NÁGRENNI STÖÐVAR"; the rest of the country appears below. Click a lamp for full CAP detail.
-- **TUNGL** — current moon phase as a real SVG orb with a correct elliptical terminator, phase name in Icelandic, illumination percent, next new/full moon, and rise/set times.
-- Empty panels reserved for **SJÁVARFÖLL** (tides), **SKJÁLFTAR** (earthquakes), and **UMFERÐ** (traffic) — ready to wire up.
+## Panels
 
-Labels and weather text are in Icelandic throughout.
+| Panel | Shows |
+|---|---|
+| **VEÐURATHUGUN** | Current observations: an analog wind dial (main needle for direction and speed, ghost needle for gusts) and readouts for temperature, dew point, humidity and pressure. |
+| **SPÁ** | Station forecast for about 10 days, grouped by day. Hourly at first, then every 3 hours. |
+| **HUGLEIÐINGAR VEÐURFRÆÐINGS** | The latest text forecast from the duty meteorologist. |
+| **VIÐVARANIR** | Active weather warnings as lamps, with Veðurstofan's own Icelandic event names and severity. Warnings that cover the station are listed first. Click a lamp for the full CAP detail. |
+| **KORT** | Two maps side by side: Iceland (15 towns, 3 highland stations) and HÖFUÐBORGARSVÆÐI (12 capital-area stations). Each station shows temperature and a wind arrow. Lamp colour shows data age: green under 3 hours, amber older, dim for no data. |
+| **SKJÁLFTAR** | Recent earthquakes, with the largest quake of the last 48 hours. New quakes blink. |
+| **TUNGL** | Moon phase as an SVG orb with a true terminator, illumination, next new and full moon, and rise and set times. |
+| **SJÁVARFÖLL** | Next high and low tides. This is an astronomical estimate from the moon's transit (about ±15–30 min), because Veðurstofan has no tide API. |
+| **UMFERÐ** | Placeholder. Not connected yet. |
+
+The header has a **sundial**: a compass seen from above. A lit sector shows today's sun path from sunrise to sunset, and the gnomon's shadow falls opposite the sun. It handles midnight sun and polar night.
+
+## Using the console
+
+- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one from the list (`web/stations.json`) or type a station number; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
+- **Presets.** Export your tabs to a `.json` file and import them on another device with the tab-strip buttons.
+- **Layout.** Click the lock in the tab strip to unlock the layout. Then drag panels to reorder them, resize them from the corner, or minimise them. The reset button restores the default layout.
+- **Version switch.** Click the version tag in the footer (`v1.0`) to open a rotary switch. Turn it to `0.8` to get the previous skin. Only the look changes; data and layout stay the same.
+
+All settings are kept in the browser's `localStorage`. The server has no per-user state. Every API call carries the station id and coordinates, and the cache is keyed on them, so different clients can show different stations.
 
 ## Stack
 
-- **Server** — Node 20+ (zero-framework ESM, one dependency for XML parsing). Proxies and caches `xmlweather.vedur.is` and scrapes the embedded CAP JSON from the vedur.is warnings page. Serves the built frontend on the same port.
-- **Frontend** — Vite + TypeScript, no UI framework. Each panel is a self-contained module implementing a tiny `Panel` contract, making new data streams a drop-in addition.
-- **Deploy** — Docker + Traefik on `traeficvm`, with a self-hosted GitHub Actions runner for automatic deploys.
+- **Server:** Node 20+, plain ESM, no framework. It proxies and caches `xmlweather.vedur.is`, scrapes warnings and quakes from vedur.is, and serves the built frontend on the same port. TTL cache with single-flight deduplication; upstream calls time out after 15 s.
+- **Frontend:** Vite + TypeScript, no UI framework. Each panel is one module that implements a small `Panel` interface and draws its own DOM and SVG.
+- **Fonts:** Routed Gothic (self-hosted, OFL) for lettering, Sixtyfour for the large readouts, VT323 for small values.
+- **Deploy:** Docker + Traefik on `traeficvm`, with automatic deploys from a self-hosted GitHub Actions runner.
 
-## Choosing a weather station
+## API
 
-The station is set in the browser, not in a config file on disk. Click the **STÖÐ** button in the console header to open the station dialog. The dialog includes a dropdown backed by `web/stations.json` for common stations around Iceland, and the underlying id/name/lat/lon fields remain editable if you want to override or enter a custom station manually.
+| Endpoint | Purpose |
+|---|---|
+| `/api/obs?station=ID` | Current observations for one station |
+| `/api/obs-multi?ids=…` | Temperature and wind for the map stations (one upstream call; the list is fixed on the server) |
+| `/api/forecast?station=ID` | Station forecast |
+| `/api/warnings?lat=…&lon=…` | Active warnings near a point |
+| `/api/textaspa` | Text forecast |
+| `/api/quakes` | Recent earthquakes |
+| `/api/station-info?id=ID` | Station name and coordinates, looked up on vedur.is |
+| `/api/health` | Liveness probe |
 
-Values are persisted in `localStorage` under `vedurstod:station`. Clicking **Sjálfgefið** resets to the built-in default (Seltjarnarnes Suðurnes, `1471`). The server has no per-user state — every API call carries `?station=…&lat=…&lon=…`, and the TTL cache is keyed on those values, so two clients on the same server can display different stations without stepping on each other.
-
-Station numbers and coordinates are published by Veðurstofa Íslands at [`xmlweather.vedur.is`](https://xmlweather.vedur.is/) (the same XML endpoint this app proxies). The dialog links there directly.
+See [`architecture.md`](./architecture.md) for cache times and internals.
 
 ## Running locally
 
 ```bash
 npm ci
-npm run dev        # starts both Vite (:5173) and the API server (:8080) together
+npm run dev        # Vite on :5173 and the API server on :8080
 ```
 
-Open `http://localhost:5173`. The `/api` proxy is handled by Vite in dev mode.
+Open `http://localhost:5173`. Vite proxies `/api` to the server. To run only the API server, use `npm run dev:server`.
 
-If you only want the API process, `npm run dev:server` still runs the Node server on `:8080`.
-
-Or as a single production process:
+Production-style run:
 
 ```bash
 npm run build
-npm start
-# http://localhost:8080
+npm start          # http://localhost:8080
 ```
 
-## Deploying with Docker + Traefik
+## Deployment
 
-The included `docker-compose.yml` builds a multi-stage image and registers it with Traefik via Docker labels. Intended for deployment on a server already running Traefik.
-
-**First-time setup on the server:**
-
-```bash
-git clone <repo> /opt/vedurstod-turbo
-cd /opt/vedurstod-turbo
-docker compose up -d --build
-```
-
-The app will be available at `vedur.benediktorri.is` once Traefik picks up the labels (immediate, no restart needed). Let's Encrypt issues the cert automatically on first request.
-
-**Requirements:**
-- An external Docker network named `traefik` must exist (`docker network create traefik` if it doesn't).
-- Traefik must be configured with a `letsencrypt` cert resolver and the Docker provider enabled.
-- Deploys on `traeficvm` are automated by `scripts/deploy-traefikvm.sh`.
-
-## Deploying via GitHub Actions (auto-deploy on push)
-
-A self-hosted GitHub Actions runner on `traeficvm` handles deploys. On every push to `main`, the workflow runs:
+Every push to `main` triggers `.github/workflows/deploy.yml`. The self-hosted runner on `traeficvm` then runs:
 
 ```bash
 sudo /opt/vedurstod-turbo/scripts/deploy-traefikvm.sh
 ```
 
-**Setup:**
+The script resets the checkout to `origin/main` and rebuilds and recreates the container. No secrets or SSH keys are needed, because the runner is on the server.
 
-1. Install a self-hosted runner on the server and register it with the repo (`Settings → Actions → Runners`).
-2. Clone the repo to `/opt/vedurstod-turbo` on the server.
-3. Push to `main` — the workflow in `.github/workflows/deploy.yml` triggers automatically.
+Important:
 
-No secrets or SSH keys are needed since the runner executes directly on the server.
+- The `docker-compose.yml` in this repo is **not** used in production. The live `vedur` service is defined in `/opt/traefik/docker-compose.yml` on the VM.
+- The sudoers rule on the VM names the deploy script path. If you rename the script, update sudoers too.
+- vedur.is does not send its intermediate TLS certificate. The `Dockerfile` installs `globalsign-intermediate.pem` and sets `NODE_EXTRA_CA_CERTS`. Do not remove these steps, or `/api/warnings` fails silently.
 
-## Adding a new data stream
+## Adding a data stream
 
-Three files, no framework plumbing:
+1. Add `server/sources/<name>.js`: fetch, parse, and return through `cached()`.
+2. Add a route in `server/index.js#handleApi`.
+3. Add `web/panels/<name>.ts`, implementing the `Panel` interface.
+4. Register it in the `PANELS` map in `web/main.ts`.
 
-1. `server/sources/<name>.js` — fetch + parse + TTL cache.
-2. Route in `server/index.js#handleApi`.
-3. `web/panels/<name>.ts` — a `Panel` factory registered in `web/main.ts`.
+## Changelog
 
-The placeholder panels for tides, earthquakes, and traffic are already wired into the layout; replacing them is just writing the three files above.
+### 1.0 (November 2026)
+
+- New phosphor console skin: amber and green outlines, Routed Gothic lettering, Bakelite cabinet.
+- Sixtyfour pixel font for the large readouts.
+- New **KORT** panel with Iceland and the capital area, backed by `/api/obs-multi`.
+- Header sundial replaces the sunrise/sunset text.
+- Footer version switch to go back to the 0.8 skin.
+- Warnings use Veðurstofan's Icelandic event names and severity; the warning lamp pulses orange while warnings are active.
+- Faster forecast scrolling (sky symbols drawn as two paths instead of 121 circles).
+- Server: failed upstream calls are cached for 2 minutes, and requests time out after 15 s.
+- Better phone layout for the map and panel titles.
+
+### 0.8 (May–June 2026)
+
+- **SKJÁLFTAR** earthquake panel and **SJÁVARFÖLL** tide estimate.
+- Separate **HUGLEIÐINGAR VEÐURFRÆÐINGS** panel.
+- Unlockable layout: drag, resize and minimise panels.
+- Raspberry Pi deployment removed; `traeficvm` is the only deploy path.
+
+### 0.7 (April 2026)
+
+- Station tabs with preset import and export.
+- Station lookup by number through `/api/station-info`.
+- Pressure shown in mbar.
