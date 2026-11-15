@@ -3379,19 +3379,34 @@ body {
   padding-top: 0.125em;
 }
 
+/* HITI: the digits scale with the width of their screen (Sixtyfour is
+   about 0.92em per character here), and °C sits in the top corner so the
+   digits get the whole width and are centred both ways. */
 .readout__screen--hero {
-  min-height: 176px;
-  padding: 26px 26px;
+  position: relative;
+  container-type: inline-size;
+  justify-content: center;
+  padding: 18px 20px;
+  /* Set here: the general .readout__screen rule comes later in the file
+     and would otherwise win with its 42px minimum. */
+  min-height: 150px;
+}
+
+.readout__screen--hero .readout__unit {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  padding-top: 0;
 }
 
 .readout__screen--hero .readout__value {
-  font-size: 64px;
+  font-size: clamp(30px, calc(100cqi / 3.75), 80px);
 }
 
-/* Five characters ("-10.2") would not fit at full size. */
+/* Five characters ("-10.2") need a little more room. */
 .readout__screen--hero .readout__value[data-len='5'],
 .readout__screen--hero .readout__value[data-len='6'] {
-  font-size: 52px;
+  font-size: clamp(26px, calc(100cqi / 4.65), 66px);
 }
 
 .wind-gauge__readout {
@@ -3407,18 +3422,6 @@ body {
 }
 
 @media (max-width: 700px) {
-  .readout__screen--hero {
-    min-height: 130px;
-  }
-
-  .readout__screen--hero .readout__value {
-    font-size: 42px;
-  }
-
-  .readout__screen--hero .readout__value[data-len='5'],
-  .readout__screen--hero .readout__value[data-len='6'] {
-    font-size: 34px;
-  }
 
   .moon__countdown-value {
     font-size: clamp(12px, 3.6vw, 17px);
