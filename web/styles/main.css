@@ -3191,3 +3191,56 @@ body {
     height: 68px;
   }
 }
+
+/* ---- Readout digits: Sixtyfour ----
+   The big readout screens (temperature, dew point, humidity, pressure,
+   wind speed, moon and tide countdowns) use Sixtyfour, a heavy pixel face
+   with optional scan lines (SIL OFL, loaded from Google Fonts in
+   index.html). Sixtyfour glyphs are 1em wide with 0.875em capitals;
+   VT323 is 0.4em wide with 0.56em capitals. The sizes below keep each
+   value about as wide as before, so nothing overflows its screen.
+   Small values (clock, footer stamps, forecast, map labels) stay VT323. */
+
+:root {
+  --font-readout: 'Sixtyfour', 'VT323', monospace;
+}
+
+.readout__value,
+.wind-gauge__readout,
+.moon__countdown-value,
+.tides__count {
+  font-family: var(--font-readout);
+  /* Default axes: no scan lines, no bleed. Raise SCAN for a CRT look. */
+  font-variation-settings: 'SCAN' 0, 'BLED' 0;
+  letter-spacing: -0.08em;
+}
+
+.readout__value {
+  font-size: 20px;
+}
+
+.readout__screen--hero .readout__value {
+  font-size: 58px;
+}
+
+.wind-gauge__readout {
+  font-size: 32px;
+}
+
+.moon__countdown-value {
+  font-size: clamp(14px, 2.4vw, 21px);
+}
+
+.tides__count {
+  font-size: clamp(13px, 2vw, 18px);
+}
+
+@media (max-width: 700px) {
+  .readout__screen--hero .readout__value {
+    font-size: 38px;
+  }
+
+  .moon__countdown-value {
+    font-size: clamp(12px, 3.6vw, 17px);
+  }
+}
