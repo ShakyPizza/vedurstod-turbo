@@ -3366,12 +3366,32 @@ body {
   letter-spacing: -0.08em;
 }
 
+/* Centre the digits in their screens. Sixtyfour leaves an empty strip
+   under the digits (its descender), so nudge them down by half of it. */
+.readout__screen,
+.readout__screen--hero {
+  align-items: center;
+}
+
 .readout__value {
-  font-size: 20px;
+  font-size: 23px;
+  line-height: 1;
+  padding-top: 0.125em;
+}
+
+.readout__screen--hero {
+  min-height: 176px;
+  padding: 26px 26px;
 }
 
 .readout__screen--hero .readout__value {
-  font-size: 58px;
+  font-size: 64px;
+}
+
+/* Five characters ("-10.2") would not fit at full size. */
+.readout__screen--hero .readout__value[data-len='5'],
+.readout__screen--hero .readout__value[data-len='6'] {
+  font-size: 52px;
 }
 
 .wind-gauge__readout {
@@ -3387,8 +3407,17 @@ body {
 }
 
 @media (max-width: 700px) {
+  .readout__screen--hero {
+    min-height: 130px;
+  }
+
   .readout__screen--hero .readout__value {
-    font-size: 38px;
+    font-size: 42px;
+  }
+
+  .readout__screen--hero .readout__value[data-len='5'],
+  .readout__screen--hero .readout__value[data-len='6'] {
+    font-size: 34px;
   }
 
   .moon__countdown-value {
