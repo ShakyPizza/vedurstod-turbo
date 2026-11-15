@@ -205,7 +205,8 @@ export function mapPanel(): Panel {
     const def = [...ISLAND_STATIONS, ...METRO_STATIONS].find((s) => s.id === id);
     const obs = id !== null ? data.get(id) : undefined;
     if (!def) {
-      detail.replaceChildren(el('span', { class: 'map__detail-hint' }, 'Veldu stöð á kortinu'));
+      // Nothing selected: the detail row stays empty and takes no space.
+      detail.replaceChildren();
       return;
     }
     const cell = (label: string, value: string, unit = '') =>
@@ -323,7 +324,7 @@ export function mapPanel(): Panel {
 
     divider = svg('line', { class: 'map-divider' });
     metroFrame = svg('rect', { class: 'map-metro-frame' });
-    metroTitle = svg('text', { class: 'map-metro-title' }, 'HÖFUÐBORGARSVÆÐIÐ');
+    metroTitle = svg('text', { class: 'map-metro-title' }, 'HÖFUÐBORGARSVÆÐI');
     seaName = svg('text', { class: 'map-sea-name' }, 'FAXAFLÓI');
     bracket = svg('rect', { class: 'map-bracket' });
     lead = svg('path', { class: 'map-lead' });
