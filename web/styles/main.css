@@ -2529,7 +2529,7 @@ body.panel-drag-active * {
 /* ---- Map panel ---- */
 
 .console__grid > [data-panel='map'] {
-  grid-column: span 8;
+  grid-column: span 12;
   grid-row: span 6;
 }
 
@@ -2539,8 +2539,9 @@ body.panel-drag-active * {
   .console__grid > [data-panel='map'] {
     grid-column: span 12;
   }
+  /* Island and capital area stack on a phone, so the map needs height. */
   .console__grid > [data-panel='map']:not(.panel--minimized) {
-    grid-row: span 4 !important;
+    grid-row: span 7 !important;
   }
 }
 
@@ -2661,14 +2662,12 @@ body.panel-drag-active * {
 .map-stn__temp {
   fill: var(--crt-amber);
   font-family: 'VT323', monospace;
-  font-size: 40px;
   filter: drop-shadow(0 0 4px rgba(245, 140, 20, 0.5));
 }
 
 .map-stn__name {
   fill: #f1e2c2;
   font-family: var(--font-legend-narrow);
-  font-size: 17px;
   letter-spacing: 0.1em;
   -webkit-text-stroke: 0.4px currentColor;
 }
@@ -3190,6 +3189,153 @@ body {
     width: 68px;
     height: 68px;
   }
+}
+
+/* ---- KORT: status lamps, wind arrows, capital-area view (issue #17) ----
+   Lamp colour is data status (green: reading within 3 h, amber: older,
+   dim: none). Marker shape tells town (circle) from highland (diamond). */
+
+.map-stn__lamp,
+.map-stn--highland .map-stn__lamp {
+  fill: #2a1d12;
+  stroke: rgba(239, 225, 194, 0.45);
+  stroke-width: 1.2;
+  filter: none;
+}
+
+.map-stn--live .map-stn__lamp {
+  fill: var(--crt-green);
+  stroke: #062b0c;
+  filter: drop-shadow(0 0 4px rgba(114, 255, 134, 0.85));
+}
+
+.map-stn--stale .map-stn__lamp {
+  fill: var(--crt-amber);
+  stroke: #2b1400;
+  filter: drop-shadow(0 0 4px rgba(245, 140, 20, 0.7));
+}
+
+.map-stn__vane {
+  stroke: #efe1c2;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: 0.9;
+  filter: none;
+}
+
+.map-stn__arrow {
+  fill: #efe1c2;
+}
+
+.map-sea {
+  fill: url(#map-sea);
+}
+
+.map-sea__bg {
+  fill: #070302;
+}
+
+.map-sea__line {
+  stroke: rgba(154, 216, 255, 0.07);
+  stroke-width: 1;
+}
+
+.map-metro-land {
+  fill: #2b1709;
+  stroke: var(--crt-amber);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-metro-land__glow {
+  fill: none;
+  stroke: rgba(245, 140, 20, 0.6);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-metro-frame {
+  fill: none;
+  stroke: rgba(245, 154, 28, 0.35);
+  stroke-width: 1;
+}
+
+.map-metro-title {
+  fill: var(--crt-amber);
+  font-family: var(--font-plate);
+  letter-spacing: 0.2em;
+}
+
+.map-sea-name {
+  fill: rgba(154, 216, 255, 0.4);
+  font-family: var(--font-plate);
+  letter-spacing: 0.5em;
+  pointer-events: none;
+}
+
+.map-divider {
+  stroke: rgba(245, 154, 28, 0.4);
+  stroke-width: 1.2;
+}
+
+.map-bracket {
+  fill: none;
+  stroke: var(--crt-green);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 2;
+}
+
+.map-lead {
+  fill: none;
+  stroke: rgba(114, 255, 134, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.map__key--town,
+.map__key--highland {
+  background: transparent;
+  border: 1.5px solid #efe1c2;
+  box-shadow: none;
+}
+
+.map__key--live {
+  border-radius: 50%;
+  background: var(--crt-green);
+  box-shadow: 0 0 6px rgba(114, 255, 134, 0.9);
+}
+
+.map__key--stale {
+  border-radius: 50%;
+  background: var(--crt-amber);
+  box-shadow: 0 0 6px rgba(245, 140, 20, 0.7);
+}
+
+.map__key--vane {
+  position: relative;
+  width: 14px;
+  height: 2px;
+  background: #efe1c2;
+  box-shadow: none;
+}
+
+.map__key--vane::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  border-left: 5px solid #efe1c2;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.map__credit {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--label-dim);
+  opacity: 0.8;
+  margin-right: 14px;
 }
 
 /* ---- Readout digits: Sixtyfour ----

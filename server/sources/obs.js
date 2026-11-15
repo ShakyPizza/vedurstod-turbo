@@ -67,7 +67,10 @@ const MULTI_FAIL_TTL = 2 * 60 * 1000;
 // upstream call, so callers cannot make the server query vedur.is for
 // arbitrary station sets.
 export const MAP_STATION_IDS = Object.freeze([
+  // Island: towns and highland stations.
   1, 178, 571, 990, 2319, 2644, 3317, 3433, 3471, 3696, 4828, 5544, 6015, 6272, 6300, 6670, 6748, 6935,
+  // Capital area.
+  1471, 1472, 1473, 1474, 1477, 1478, 1480, 1481, 1482, 1578, 1579,
 ]);
 const MAP_STATION_SET = new Set(MAP_STATION_IDS);
 
