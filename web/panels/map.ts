@@ -324,7 +324,7 @@ export function mapPanel(): Panel {
 
     divider = svg('line', { class: 'map-divider' });
     metroFrame = svg('rect', { class: 'map-metro-frame' });
-    metroTitle = svg('text', { class: 'map-metro-title' }, 'HÖFUÐBORGARSVÆÐIÐ');
+    metroTitle = svg('text', { class: 'map-metro-title' }, 'HÖFUÐBORGARSVÆÐI');
     seaName = svg('text', { class: 'map-sea-name' }, 'FAXAFLÓI');
     bracket = svg('rect', { class: 'map-bracket' });
     lead = svg('path', { class: 'map-lead' });
