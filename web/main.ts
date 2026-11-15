@@ -55,16 +55,17 @@ const PANEL_BOUNDS: Record<PanelKey, PanelBounds> = {
   textaspa: { colSpan: 6, rowSpan: 4, minCols: 4, maxCols: 12, minRows: 2, maxRows: 5 },
   forecast: { colSpan: 6, rowSpan: 5, minCols: 4, maxCols: 12, minRows: 3, maxRows: 7 },
   warnings: { colSpan: 6, rowSpan: 3, minCols: 6, maxCols: 12, minRows: 3, maxRows: 6 },
-  map: { colSpan: 8, rowSpan: 6, minCols: 6, maxCols: 12, minRows: 4, maxRows: 8 },
+  map: { colSpan: 12, rowSpan: 6, minCols: 8, maxCols: 12, minRows: 4, maxRows: 8 },
   moon: { colSpan: 4, rowSpan: 4, minCols: 4, maxCols: 8, minRows: 4, maxRows: 5 },
   tides: { colSpan: 4, rowSpan: 3, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
   quakes: { colSpan: 8, rowSpan: 5, minCols: 6, maxCols: 12, minRows: 5, maxRows: 5 },
   traffic: { colSpan: 8, rowSpan: 2, minCols: 4, maxCols: 8, minRows: 2, maxRows: 4 },
 };
 
-const DEFAULT_PANEL_ORDER: PanelKey[] = ['obs', 'forecast', 'textaspa', 'warnings', 'map', 'moon', 'tides', 'quakes', 'traffic'];
+const DEFAULT_PANEL_ORDER: PanelKey[] = ['obs', 'forecast', 'textaspa', 'warnings', 'map', 'moon', 'quakes', 'tides', 'traffic'];
 const MOBILE_LAYOUT = window.matchMedia('(max-width: 700px)');
 const TEXTASPA_SPLIT_LAYOUT_KEY = 'vedurstod:migration:textaspa-split-layout';
+const MAP_SPLIT_LAYOUT_KEY = 'vedurstod:migration:map-split-layout';
 
 function isPanelKey(key: string | undefined): key is PanelKey {
   return Boolean(key && key in PANELS);
@@ -150,6 +151,14 @@ try {
       tabState.panelLayout.textaspa = { ...tabState.panelLayout.textaspa, rowSpan: 2 };
     }
     localStorage.setItem(TEXTASPA_SPLIT_LAYOUT_KEY, '1');
+    saveTabs(tabState);
+  }
+  // The map shows the island and the capital area side by side, so it
+  // needs the full width. Widen saved layouts from the island-only map once.
+  if (localStorage.getItem(MAP_SPLIT_LAYOUT_KEY) !== '1') {
+    const map = tabState.panelLayout.map;
+    if (map && map.colSpan < 12) tabState.panelLayout.map = { ...map, colSpan: 12 };
+    localStorage.setItem(MAP_SPLIT_LAYOUT_KEY, '1');
     saveTabs(tabState);
   }
 } catch {
