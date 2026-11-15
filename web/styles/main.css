@@ -3338,6 +3338,11 @@ body {
   margin-right: 14px;
 }
 
+/* No station selected: hide the empty detail row so the map gets the room. */
+.map__detail:empty {
+  display: none;
+}
+
 /* ---- Readout digits: Sixtyfour ----
    The big readout screens (temperature, dew point, humidity, pressure,
    wind speed, moon and tide countdowns) use Sixtyfour, a heavy pixel face

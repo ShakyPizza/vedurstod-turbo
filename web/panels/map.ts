@@ -205,7 +205,8 @@ export function mapPanel(): Panel {
     const def = [...ISLAND_STATIONS, ...METRO_STATIONS].find((s) => s.id === id);
     const obs = id !== null ? data.get(id) : undefined;
     if (!def) {
-      detail.replaceChildren(el('span', { class: 'map__detail-hint' }, 'Veldu stöð á kortinu'));
+      // Nothing selected: the detail row stays empty and takes no space.
+      detail.replaceChildren();
       return;
     }
     const cell = (label: string, value: string, unit = '') =>
