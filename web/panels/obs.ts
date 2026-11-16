@@ -288,7 +288,10 @@ export function obsPanel(): Panel {
         gauge.gustText.textContent =
           data.wind.gust !== null ? `HVIÐA ${fmt(data.wind.gust, 0)} m/s` : 'HVIÐA —';
 
-        document.getElementById('obs-temp')!.textContent = fmt(data.temperature, 1);
+        const tempEl = document.getElementById('obs-temp')!;
+        tempEl.textContent = fmt(data.temperature, 1);
+        // Long values like "-10.2" get a smaller size so they fit the screen.
+        tempEl.dataset.len = String(tempEl.textContent.length);
         document.getElementById('obs-dew')!.textContent = fmt(data.dewPoint, 1);
         document.getElementById('obs-rh')!.textContent = fmt(data.humidity, 0);
         document.getElementById('obs-pressure')!.textContent = fmt(data.pressure, 0);
