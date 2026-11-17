@@ -113,7 +113,7 @@ function buildGauge(): { root: SVGElement; needle: SVGElement; gustNeedle: SVGEl
   }
 
   // Gust needle (behind main needle)
-  const gustNeedle = svg('g', { class: 'wind-gauge__needle wind-gauge__needle--gust', transform: `rotate(0 ${cx} ${cy})` });
+  const gustNeedle = svg('g', { class: 'wind-gauge__needle wind-gauge__needle--gust', transform: `rotate(0 ${cx} ${cy})`, visibility: 'hidden' });
   gustNeedle.append(
     svg('path', {
       d: `M ${cx} ${cy - (r - 22)} L ${cx - 5} ${cy} L ${cx + 5} ${cy} Z`,
@@ -123,7 +123,7 @@ function buildGauge(): { root: SVGElement; needle: SVGElement; gustNeedle: SVGEl
   root.append(gustNeedle);
 
   // Main needle
-  const needle = svg('g', { class: 'wind-gauge__needle', transform: `rotate(0 ${cx} ${cy})` });
+  const needle = svg('g', { class: 'wind-gauge__needle', transform: `rotate(0 ${cx} ${cy})`, visibility: 'hidden' });
   needle.append(
     svg('path', {
       d: `M ${cx} ${cy - (r - 10)} L ${cx - 7} ${cy + 10} L ${cx + 7} ${cy + 10} Z`,
@@ -278,11 +278,15 @@ export function obsPanel(): Panel {
         if (deg !== null) {
           gauge.needle.setAttribute('transform', `rotate(${deg} ${cx} ${cy})`);
         }
+        gauge.needle.setAttribute('visibility', deg !== null ? 'visible' : 'hidden');
         if (data.wind.gust !== null && data.wind.speed !== null) {
           const gustRatio = data.wind.gust / Math.max(data.wind.speed, 1);
           const spread = Math.min(30, (gustRatio - 1) * 60);
           const gustDeg = (deg ?? 0) + (spread || 0);
           gauge.gustNeedle.setAttribute('transform', `rotate(${gustDeg} ${cx} ${cy})`);
+          gauge.gustNeedle.setAttribute('visibility', deg !== null ? 'visible' : 'hidden');
+        } else {
+          gauge.gustNeedle.setAttribute('visibility', 'hidden');
         }
         gauge.speedText.textContent = fmt(data.wind.speed, 0);
         gauge.gustText.textContent =

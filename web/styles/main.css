@@ -899,7 +899,7 @@ body.panel-drag-active * {
 }
 
 .wind-gauge__needle {
-  transition: transform 1.2s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: none;
 }
 
 .wind-gauge__needle-shape {
@@ -3158,7 +3158,6 @@ body {
 .sundial__sun {
   fill: #ffb347;
   filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.9)) drop-shadow(0 0 10px rgba(245, 140, 20, 0.6));
-  transition: cx 0.6s, cy 0.6s;
 }
 
 .sundial__sun--down {

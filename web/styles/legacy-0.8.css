@@ -888,7 +888,7 @@ body.panel-drag-active * {
 }
 
 .wind-gauge__needle {
-  transition: transform 1.2s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: none;
 }
 
 .wind-gauge__needle-shape {
