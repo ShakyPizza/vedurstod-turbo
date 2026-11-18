@@ -1,42 +1,16 @@
 import { cached } from '../cache.js';
 import { DEFAULT_STATION } from '../config.js';
+import { fetchImoJson } from './imo-api.js';
 
 const TTL = 2 * 60 * 1000;
-const WARNINGS_URL = 'https://www.vedur.is/vedur/vidvaranir/';
+const API_VERSION = '2026-04-14';
 
-function extractDataBlock(html) {
-  const needle = "'data':";
-  const i = html.indexOf(needle);
-  if (i < 0) return null;
-  let start = html.indexOf('{', i);
-  if (start < 0) return null;
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  for (let k = start; k < html.length; k++) {
-    const ch = html[k];
-    if (escape) {
-      escape = false;
-      continue;
-    }
-    if (ch === '\\') {
-      escape = true;
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === '{') depth++;
-    else if (ch === '}') {
-      depth--;
-      if (depth === 0) return html.slice(start, k + 1);
-    }
-  }
-  return null;
-}
+// Active CAP alerts from the IMO CAP API. Replaces the old scrape of
+// www.vedur.is/vedur/vidvaranir/, which the new vedur.is site removed.
+// The API answers 204 (→ null) when nothing is active.
+const ACTIVE_URL = '/cap/v1/capbroker/active/detailed/all';
 
+// CAP polygons are "lat,lon lat,lon …".
 function parsePolygon(raw) {
   if (!raw) return [];
   return String(raw)
@@ -62,107 +36,72 @@ function pointInPolygon(lat, lon, ring) {
   return inside;
 }
 
-function pickInfo(alert) {
-  if (!Array.isArray(alert?.info)) return null;
-  return (
-    alert.info.find((x) => x.language === 'is-IS') ??
-    alert.info.find((x) => !String(x.language ?? '').startsWith('en')) ??
-    alert.info[0] ??
-    null
-  );
+function first(map, key) {
+  const v = map?.[key];
+  if (Array.isArray(v)) return v[0] ?? null;
+  return v ?? null;
 }
 
-function pickParam(info, name) {
-  const arr = Array.isArray(info?.parameter) ? info.parameter : [];
-  const hit = arr.find((p) => p.valueName === name);
-  return hit ? hit.value : null;
+function areaNames(geocode) {
+  if (!geocode || typeof geocode !== 'object') return [];
+  return [...new Set(Object.values(geocode).flat().filter(Boolean).map(String))];
 }
 
-function pickEventCode(info, name) {
-  const arr = Array.isArray(info?.eventCode) ? info.eventCode : [];
-  const hit = arr.find((p) => p.valueName === name);
-  return hit ? hit.value : null;
+function isWeather(alert) {
+  const cats = Array.isArray(alert.category) ? alert.category : [alert.category];
+  return cats.some((c) => String(c ?? '').toLowerCase() === 'met');
 }
 
-async function load(lat, lon) {
-  const res = await fetch(WARNINGS_URL, {
-    headers: { 'user-agent': 'vedurstod-turbo/0.1 (+weather dashboard)' },
-  });
-  if (!res.ok) throw new Error(`vedur.is warnings ${res.status}`);
-  const html = await res.text();
-  const block = extractDataBlock(html);
+// Fetch every active alert once; per-station filtering happens in getWarnings.
+async function loadActive() {
+  const data = await fetchImoJson(ACTIVE_URL, { apiVersion: API_VERSION });
+  const alerts = Array.isArray(data) ? data : [];
+  return {
+    fetchedAt: new Date().toISOString(),
+    alerts: alerts
+      .filter((a) => isWeather(a) && String(a.msgtype ?? '').toLowerCase() !== 'cancel')
+      .map((a) => ({
+        id: a.identifier,
+        msgType: a.msgtype ?? null,
+        sent: a.sent ?? null,
+        onset: a.onset ?? null,
+        expires: a.expires ?? null,
+        severity: a.severity ?? null,
+        certainty: a.certainty ?? null,
+        urgency: a.urgency ?? null,
+        color: first(a.parameter, 'Color'),
+        type: first(a.eventcode, 'alertType'),
+        event: a.event_is ?? null,
+        headline: a.headline_is ?? null,
+        description: a.description_is ?? null,
+        areas: areaNames(a.geocode_is),
+        polygons: (Array.isArray(a.polygon) ? a.polygon : [a.polygon]).filter(Boolean).map(parsePolygon),
+      })),
+  };
+}
 
-  const fetchedAt = new Date().toISOString();
-  if (!block) {
-    return { fetchedAt, updatedAt: null, nearby: [], other: [], raw: 0 };
-  }
-
-  let data;
-  try {
-    data = JSON.parse(block);
-  } catch (err) {
-    throw new Error('failed to parse warnings JSON: ' + err.message);
-  }
-
-  const alerts = Array.isArray(data?.alerts) ? data.alerts : [];
-
+export async function getWarnings(lat = DEFAULT_STATION.lat, lon = DEFAULT_STATION.lon) {
+  const { fetchedAt, alerts } = await cached('warnings:active', TTL, loadActive);
   const now = Date.now();
-  const shaped = [];
-
-  for (const alert of alerts) {
-    const info = pickInfo(alert);
-    if (!info) continue;
-    const expires = info.expires ? new Date(info.expires) : null;
-    if (expires && expires.getTime() < now) continue;
-
-    const areas = (Array.isArray(info.area) ? info.area : []).map((a) => {
-      const polygons = (Array.isArray(a.polygon) ? a.polygon : [a.polygon])
-        .filter(Boolean)
-        .map(parsePolygon);
-      return {
-        description: a.areaDesc ?? null,
-        polygons,
-      };
-    });
-
-    const covers = areas.some((a) =>
-      a.polygons.some((ring) => pointInPolygon(lat, lon, ring)),
-    );
-
-    shaped.push({
-      id: alert.identifier,
-      msgType: alert.msgType ?? null,
-      sent: alert.sent ?? null,
-      onset: info.onset ?? null,
-      expires: info.expires ?? null,
-      severity: info.severity ?? null,
-      certainty: info.certainty ?? null,
-      urgency: info.urgency ?? null,
-      color: pickParam(info, 'Color'),
-      type: pickEventCode(info, 'alertType'),
-      event: info.event ?? null,
-      headline: info.headline ?? null,
-      description: info.description ?? null,
-      areas: areas.map((a) => a.description).filter(Boolean),
-      coversStation: covers,
-    });
-  }
+  const shaped = alerts
+    .filter((a) => !a.expires || new Date(a.expires).getTime() >= now)
+    .map(({ polygons, ...rest }) => ({
+      ...rest,
+      coversStation: polygons.some((ring) => pointInPolygon(lat, lon, ring)),
+    }));
 
   shaped.sort((a, b) => {
     if (a.coversStation !== b.coversStation) return a.coversStation ? -1 : 1;
     return String(a.onset ?? '').localeCompare(String(b.onset ?? ''));
   });
 
+  const updatedAt = alerts.reduce((max, a) => (a.sent && a.sent > max ? a.sent : max), '') || null;
+
   return {
     fetchedAt,
-    updatedAt: data.updateTS ?? null,
+    updatedAt,
     nearby: shaped.filter((a) => a.coversStation),
     other: shaped.filter((a) => !a.coversStation),
     raw: alerts.length,
   };
-}
-
-export function getWarnings(lat = DEFAULT_STATION.lat, lon = DEFAULT_STATION.lon) {
-  const key = `warnings:${lat.toFixed(4)}:${lon.toFixed(4)}`;
-  return cached(key, TTL, () => load(lat, lon));
 }

@@ -655,21 +655,64 @@ function wireStationDialog() {
     if (state) status.dataset.state = state;
     else delete status.dataset.state;
   };
-  async function lookupStation(id: number): Promise<Station | null> {
+  // Look up a station by id on the server (IMO Weather API). Returns the
+  // station, 'not-found' for an unknown id, or 'error' when the lookup
+  // service itself failed.
+  let lookupSeq = 0;
+  async function lookupStation(id: number): Promise<Station | 'not-found' | 'error' | 'stale'> {
+    const seq = ++lookupSeq;
     setLookupStatus('Sæki…', 'loading');
-    const res = await fetch(`/api/station-info?id=${id}`);
+    let res: Response;
+    try {
+      res = await fetch(`/api/station-info?id=${id}`);
+    } catch {
+      res = new Response(null, { status: 503 });
+    }
+    if (seq !== lookupSeq) return 'stale';
     if (res.status === 404) {
-      setLookupStatus('Stöð fannst ekki á vedur.is', 'error');
-      return null;
+      setLookupStatus('Stöð fannst ekki hjá Veðurstofunni', 'error');
+      return 'not-found';
     }
     if (!res.ok) {
       setLookupStatus('Uppfletting mistókst', 'error');
-      return null;
+      return 'error';
     }
     const data = (await res.json()) as Station;
+    if (seq !== lookupSeq) return 'stale';
     setLookupStatus(`Fyllt: ${data.name}`, 'ok');
     return data;
   }
+
+  const readForm = (id: number): Station | null => {
+    const fd = new FormData(form);
+    const s: Station = {
+      id,
+      name: String(fd.get('name') ?? '').trim(),
+      lat: Number(fd.get('lat')),
+      lon: Number(fd.get('lon')),
+    };
+    if (!s.name || !Number.isFinite(s.lat) || !Number.isFinite(s.lon)) return null;
+    return s;
+  };
+
+  // Fill name and coordinates as soon as a station number is typed in.
+  const idInput = form.elements.namedItem('id') as HTMLInputElement;
+  idInput.addEventListener('change', async () => {
+    const id = Number(idInput.value);
+    if (!Number.isFinite(id) || id <= 0) return;
+    const known = STATIONS.find((s) => s.id === id);
+    if (known) {
+      fill(known);
+      syncSelect(known);
+      setLookupStatus('', null);
+      return;
+    }
+    const looked = await lookupStation(Math.trunc(id));
+    if (typeof looked === 'object') {
+      fill(looked);
+      syncSelect(looked);
+    }
+  });
 
   const escHandler = (ev: KeyboardEvent) => {
     if (ev.key === 'Escape' && dialog.open) {
@@ -751,23 +794,26 @@ function wireStationDialog() {
       if (submitBtn) submitBtn.disabled = true;
       try {
         const looked = await lookupStation(typedId);
-        if (!looked) return; // 404 or upstream error — keep dialog open
-        next = looked;
-        fill(looked);
-        syncSelect(looked);
+        if (looked === 'not-found' || looked === 'stale') return; // keep dialog open
+        if (looked === 'error') {
+          // Lookup service down: trust the fields the user filled in.
+          const typed = readForm(typedId);
+          if (!typed) return;
+          next = typed;
+        } else {
+          next = looked;
+          fill(looked);
+          syncSelect(looked);
+        }
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }
       tabState.stations.push(next);
       tabState.activeIndex = tabState.stations.length - 1;
     } else {
-      next = {
-        id: typedId,
-        name: String(fd.get('name') ?? '').trim(),
-        lat: Number(fd.get('lat')),
-        lon: Number(fd.get('lon')),
-      };
-      if (!next.name || !Number.isFinite(next.lat) || !Number.isFinite(next.lon)) return;
+      const typed = readForm(typedId);
+      if (!typed) return;
+      next = typed;
       tabState.stations[tabState.activeIndex] = next;
     }
     persist();

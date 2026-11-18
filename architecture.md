@@ -10,7 +10,8 @@ browser
   -> fetch /api/*
   -> server/index.js
   -> server/sources/*
-  -> upstream vedur.is data
+  -> upstream xmlweather.vedur.is (obs, forecast, text)
+     and api.vedur.is (CAP warnings, quakes, station metadata)
 ```
 
 - `server/` is a plain Node ESM HTTP server that serves both the built SPA and the API.
@@ -58,9 +59,12 @@ browser
 | `/api/obs?station=ID` | current observation data for a station | 10 min |
 | `/api/obs-multi?ids=1;990;…` | temperature and wind for the map stations (fixed server-side list; `ids` only filters it), one upstream call for all | 10 min (2 min after a failure) |
 | `/api/forecast?station=ID&forecastStation=ID` | station forecast from vedur.is | 60 min |
-| `/api/warnings?lat=…&lon=…` | active Icelandic weather warnings near a point | 2 min |
+| `/api/warnings?lat=…&lon=…` | active Icelandic weather warnings near a point (`api.vedur.is/cap`) | 2 min (one upstream call shared by all points) |
 | `/api/textaspa` | Icelandic text forecast from Hugin | 30 min |
+| `/api/quakes` | earthquakes from the last 48 h in and around Iceland (`api.vedur.is/quakes`) | 1 min |
+| `/api/station-info?id=ID` | station name and coordinates (`api.vedur.is/weather/stations/{id}`) | 24 h |
 | `/api/health` | liveness probe | none |
+| `/stodvar` (HTML, not under `/api`) | full list of active weather stations | 24 h |
 
 Notes:
 
@@ -88,7 +92,9 @@ interface Panel {
 
 - the source of truth is `localStorage['vedurstod:station']`
 - the default station is defined in both `web/station-config.ts` and `server/config.js`
-- the station dialog includes a dropdown populated from `web/stations.json`
+- the station dialog includes a dropdown populated from `web/stations.json`: 38 hand-picked main and capital-area stations in a deliberate order (keep it). To change the list, edit `CURATED` in `scripts/build-stations.mjs` and run it; it only takes coordinates from the IMO Weather API
+- the dialog links to `/stodvar`, a server-rendered page (`server/pages/stodvar.js`) that lists every active weather station with its number, region and a link to its vedur.is page. The new vedur.is has no such list. Vite proxies `/stodvar` to the backend in dev
+- typing a station number looks the station up through `/api/station-info`; if that service fails, the typed fields are used as-is
 - the id/name/lat/lon fields remain editable, so the dropdown is a convenience rather than the only input path
 - every API URL includes station id plus lat/lon, so different browser tabs can target different stations against the same server safely
 
@@ -104,7 +110,9 @@ interface Panel {
 
 - vedur.is observation decimals use Icelandic commas; `server/sources/vedur.js` normalizes them before parsing
 - wind directions are Icelandic 16-point cardinals, not degrees
-- warnings are extracted from an embedded CAP JSON blob using balanced-brace parsing, then filtered to Icelandic entries and matched by polygon
+- warnings come from the CAP API (`/cap/v1/capbroker/active/detailed/all`, 204 when nothing is active), are filtered to category `Met`, and are matched to the station by point-in-polygon
+- the `api.vedur.is` clients pin an `x-vi-api-version` header so a new API version cannot change the response shape under us
+- the old www.vedur.is pages (`/vedur/stodvar/`, `/vedur/vidvaranir/`, `/skjalftar-og-eldgos/jardskjalftar/`) were removed in the late-2026 site rebuild; do not scrape the new Next.js site
 - the moon is drawn as SVG geometry, not an image sprite
 
 ## Local development
