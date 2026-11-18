@@ -22,7 +22,7 @@ The header has a **sundial**: a compass seen from above. A lit sector shows toda
 
 ## Using the console
 
-- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one from the list (`web/stations.json`) or type a station number; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
+- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one from the list (`web/stations.json`, grouped by forecast region; rebuild it with `node scripts/build-stations.mjs`) or type a station number; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
 - **Presets.** Export your tabs to a `.json` file and import them on another device with the tab-strip buttons.
 - **Layout.** Click the lock in the tab strip to unlock the layout. Then drag panels to reorder them, resize them from the corner, or minimise them. The reset button restores the default layout.
 - **Version switch.** Click the version tag in the footer (`v1.0`) to open a rotary switch. Turn it to `0.8` to get the previous skin. Only the look changes; data and layout stay the same.
@@ -31,7 +31,7 @@ All settings are kept in the browser's `localStorage`. The server has no per-use
 
 ## Stack
 
-- **Server:** Node 20+, plain ESM, no framework. It proxies and caches `xmlweather.vedur.is`, scrapes warnings and quakes from vedur.is, and serves the built frontend on the same port. TTL cache with single-flight deduplication; upstream calls time out after 15 s.
+- **Server:** Node 20+, plain ESM, no framework. It proxies and caches `xmlweather.vedur.is` (observations, forecasts, text forecast) and the IMO open API at `api.vedur.is` (warnings, earthquakes, station metadata), and serves the built frontend on the same port. TTL cache with single-flight deduplication; upstream calls time out after 15 s.
 - **Frontend:** Vite + TypeScript, no UI framework. Each panel is one module that implements a small `Panel` interface and draws its own DOM and SVG.
 - **Fonts:** Routed Gothic (self-hosted, OFL) for lettering, Sixtyfour for the large readouts, VT323 for small values.
 - **Deploy:** Docker + Traefik on `traeficvm`, with automatic deploys from a self-hosted GitHub Actions runner.
@@ -46,7 +46,7 @@ All settings are kept in the browser's `localStorage`. The server has no per-use
 | `/api/warnings?lat=…&lon=…` | Active warnings near a point |
 | `/api/textaspa` | Text forecast |
 | `/api/quakes` | Recent earthquakes |
-| `/api/station-info?id=ID` | Station name and coordinates, looked up on vedur.is |
+| `/api/station-info?id=ID` | Station name and coordinates, from the IMO Weather API |
 | `/api/health` | Liveness probe |
 
 See [`architecture.md`](./architecture.md) for cache times and internals.

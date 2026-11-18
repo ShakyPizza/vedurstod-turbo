@@ -33,10 +33,11 @@ npm run preview      # Vite preview of built dist/
 
 - **Decimal parsing**: vedur.is uses Icelandic commas (`1,5` not `1.5`). `server/sources/vedur.js`'s `num()` replaces `,` → `.` before `parseFloat`.
 - **Wind direction**: 16 Icelandic cardinal names (N, NNA, NA, ANA, A, …), not degrees. Panels map these to angles via a `DIRS` table.
-- **Warnings scraping** (`server/sources/warnings.js`): extracts embedded CAP JSON from a JS literal using balanced-brace counting (not regex), then runs a ray-casting point-in-polygon test against station coords. Filters to `is-IS` alerts only.
+- **Upstreams**: obs, forecast and text forecast use `xmlweather.vedur.is`. Warnings, earthquakes and station lookup use the IMO open API at `api.vedur.is` (Swagger at https://api.vedur.is/) via `server/sources/imo-api.js`, with a pinned `x-vi-api-version`. The old www.vedur.is pages were removed in the site rebuild; do not scrape the new site.
+- **Warnings** (`server/sources/warnings.js`): CAP API `active/detailed/all` (204 = none active), filtered to category `Met`, then a ray-casting point-in-polygon test against station coords.
 - **Text forecast**: `server/sources/textaspa.js` is active and the output is rendered inside `web/panels/obs.ts`.
 - **Moon terminator** (`web/panels/moon.ts`): `moonLitPath(R, k, phase)` computes SVG arc path for the illuminated region. Waxing/waning and crescent/gibbous determine arc sweep flags.
-- **Station selection**: `web/stations.json` feeds the station dropdown, but the dialog fields remain editable for custom stations.
+- **Station selection**: `web/stations.json` feeds the station dropdown (grouped by region; regenerate with `node scripts/build-stations.mjs`), but the dialog fields remain editable for custom stations.
 
 ## Adding a new data stream (tides, earthquakes, traffic)
 

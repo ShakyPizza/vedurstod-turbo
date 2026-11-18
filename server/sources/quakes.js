@@ -1,146 +1,59 @@
 import { cached } from '../cache.js';
+import { fetchImoJson } from './imo-api.js';
 
 const TTL = 60 * 1000;
-const PAGE_URL = 'https://www.vedur.is/skjalftar-og-eldgos/jardskjalftar/';
+const API_VERSION = '2026-08-06';
+const WINDOW_MS = 48 * 60 * 60 * 1000;
 
-// vedur.is decimals use Icelandic comma; convert before parseFloat.
-function num(s) {
-  if (s === undefined || s === null) return null;
-  const n = Number.parseFloat(String(s).replace(',', '.'));
+// Earthquake catalogue from the IMO Quakes API (`/quakes/events`, GeoJSON).
+// Replaces the old scrape of www.vedur.is/skjalftar-og-eldgos/jardskjalftar/,
+// which the new vedur.is site removed.
+const EVENTS_URL = '/quakes/events';
+
+// Iceland and its near offshore zones (Reykjanes Ridge, Tjörnes Fracture
+// Zone, Kolbeinsey). The API default covers the whole North Atlantic.
+const ICELAND_POLYGON = 'POLYGON((-26 62.5, -12 62.5, -12 68, -26 68, -26 62.5))';
+
+// Reviewed events that a seismologist marked as not real quakes.
+const DROP_TYPES = new Set(['not existing', 'explosion', 'outside of network interest']);
+
+function finite(v) {
+  const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
 
-function extractFieldString(block, key) {
-  const re = new RegExp(`'${key}'\\s*:\\s*'((?:[^'\\\\]|\\\\.)*)'`);
-  const m = re.exec(block);
-  return m ? m[1] : null;
-}
+async function load() {
+  const start = new Date(Date.now() - WINDOW_MS).toISOString().slice(0, 19);
+  const data = await fetchImoJson(EVENTS_URL, {
+    params: { start_time: start, polygon: ICELAND_POLYGON, format: 'json' },
+    apiVersion: API_VERSION,
+  });
+  const features = Array.isArray(data?.features) ? data.features : [];
 
-// Parse `'t':new Date(2026,4-1,25,12,27,9)` — Iceland is on UTC year-round so
-// we treat the components as UTC and emit an ISO string.
-function extractDate(block) {
-  const m = /'t'\s*:\s*new Date\(\s*(\d+)\s*,\s*(\d+)\s*-\s*1\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/.exec(
-    block,
-  );
-  if (!m) return null;
-  const [, y, mo, d, h, mi, s] = m;
-  const ts = Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s));
-  return new Date(ts).toISOString();
-}
-
-function splitRecords(arrayBody) {
-  const out = [];
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  let start = -1;
-  for (let i = 0; i < arrayBody.length; i++) {
-    const ch = arrayBody[i];
-    if (escape) {
-      escape = false;
-      continue;
-    }
-    if (ch === '\\') {
-      escape = true;
-      continue;
-    }
-    if (ch === "'") {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === '{') {
-      if (depth === 0) start = i;
-      depth++;
-    } else if (ch === '}') {
-      depth--;
-      if (depth === 0 && start >= 0) {
-        out.push(arrayBody.slice(start, i + 1));
-        start = -1;
-      }
-    }
-  }
-  return out;
-}
-
-function parsePage(html) {
-  const marker = 'VI.quakeInfo';
-  const idx = html.indexOf(marker);
-  if (idx < 0) return [];
-  const lbr = html.indexOf('[', idx);
-  if (lbr < 0) return [];
-  // Walk to the matching ']' respecting strings.
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  let end = -1;
-  for (let i = lbr; i < html.length; i++) {
-    const ch = html[i];
-    if (escape) {
-      escape = false;
-      continue;
-    }
-    if (ch === '\\') {
-      escape = true;
-      continue;
-    }
-    if (ch === "'") {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === '[') depth++;
-    else if (ch === ']') {
-      depth--;
-      if (depth === 0) {
-        end = i;
-        break;
-      }
-    }
-  }
-  if (end < 0) return [];
-  const records = splitRecords(html.slice(lbr + 1, end));
-
-  return records
-    .map((rec, i) => {
-      const lat = num(extractFieldString(rec, 'lat'));
-      const lon = num(extractFieldString(rec, 'lon'));
-      const depth = num(extractFieldString(rec, 'dep'));
-      const magnitude = num(extractFieldString(rec, 's'));
-      const quality = extractFieldString(rec, 'q');
-      const dL = extractFieldString(rec, 'dL');
-      const dD = (extractFieldString(rec, 'dD') ?? '').trim();
-      const dR = (extractFieldString(rec, 'dR') ?? '').replace(/_/g, ' ').trim();
-      const time = extractDate(rec);
-      const place = dL && dD && dR ? `${dL} km ${dD} af ${dR}` : dR || null;
+  const quakes = features
+    .filter((f) => !DROP_TYPES.has(String(f?.properties?.type ?? '').toLowerCase()))
+    .map((f) => {
+      const p = f.properties ?? {};
+      const [lon, lat] = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates : [];
+      const t = p.time ? new Date(p.time) : null;
+      const time = t && !Number.isNaN(t.getTime()) ? t.toISOString() : null;
       return {
-        id: `${time ?? ''}-${lat ?? ''}-${lon ?? ''}`,
-        lat,
-        lon,
+        id: String(p.event_id ?? `${time ?? ''}-${lat ?? ''}-${lon ?? ''}`),
+        lat: finite(lat),
+        lon: finite(lon),
         time,
-        magnitude,
-        depth,
-        quality,
-        place,
+        magnitude: finite(p.magnitude),
+        depth: finite(p.depth),
+        quality: p.evaluation_mode === 'manual' ? 'yfirfarinn' : 'sjálfvirkur',
+        place: p.region ? String(p.region) : null,
       };
     })
     .filter((q) => q.time !== null);
-}
 
-async function load() {
-  const res = await fetch(PAGE_URL, {
-    headers: { accept: 'text/html', 'user-agent': 'vedurstod-turbo/0.7 (+https://github.com)' },
-  });
-  if (!res.ok) throw new Error(`quakes ${res.status}`);
-  const html = await res.text();
-  const quakes = parsePage(html);
   quakes.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-  return {
-    fetchedAt: new Date().toISOString(),
-    quakes,
-  };
+  return { fetchedAt: new Date().toISOString(), quakes };
 }
 
 export function getQuakes() {
-  return cached('quakes', TTL, load);
+  return cached('quakes', TTL, load, { failTtlMs: 30 * 1000 });
 }
