@@ -4,8 +4,8 @@
 //   node scripts/build-stations.mjs
 //
 // The dropdown is a short, hand-picked list of main and capital-area
-// stations. To add or remove one, edit CURATED below and run the script.
-// Coordinates and forecast regions come from the API, so they stay correct.
+// stations. Their order is deliberate: keep it. To add or remove one, edit
+// CURATED below and run the script. Coordinates come from the API.
 // Any other station can still be added by typing its number in the dialog.
 
 import { writeFile } from 'node:fs/promises';
@@ -57,49 +57,20 @@ const CURATED = [
   [6935, 'Hveravellir'],
 ];
 
-const REGIONS = [
-  [1, 'Höfuðborgarsvæðið'],
-  [2, 'Suðurland'],
-  [3, 'Faxaflói'],
-  [4, 'Breiðafjörður'],
-  [5, 'Vestfirðir'],
-  [6, 'Strandir og Norðurland vestra'],
-  [7, 'Norðurland eystra'],
-  [8, 'Austurland að Glettingi'],
-  [9, 'Austfirðir'],
-  [10, 'Suðausturland'],
-  [11, 'Miðhálendið'],
-];
-
-// Stations the region lists leave out (other station types).
-const REGION_FALLBACK = { 571: 'Austurland að Glettingi' };
-
 async function getJson(url) {
   const res = await fetch(url, { headers: { 'user-agent': UA, 'x-vi-api-version': '2026-02-17' } });
   if (!res.ok) throw new Error(`${url} ${res.status}`);
   return res.json();
 }
 
-const regionOf = new Map();
-for (const [regionId, region] of REGIONS) {
-  // The capital area also appears in Faxaflói; the first (smaller) region wins.
-  for (const s of await getJson(`${API}/stations?region_id=${regionId}`)) {
-    if (!regionOf.has(s.station)) regionOf.set(s.station, region);
-  }
-}
-
 const round = (n) => Math.round(n * 10000) / 10000;
-const byName = new Intl.Collator('is').compare;
-const regionIndex = (r) => REGIONS.findIndex(([, name]) => name === r);
 
+// Keep CURATED's order and names exactly; only coordinates come from the API.
 const stations = [];
 for (const [id, name] of CURATED) {
   const s = await getJson(`${API}/stations/${id}`);
-  const region = regionOf.get(id) ?? REGION_FALLBACK[id];
-  if (!region) throw new Error(`no region for station ${id}; add it to REGION_FALLBACK`);
-  stations.push({ id, name, lat: round(s.lat), lon: round(s.lon), region });
+  stations.push({ id, name, lat: round(s.lat), lon: round(s.lon) });
 }
-stations.sort((a, b) => regionIndex(a.region) - regionIndex(b.region) || byName(a.name, b.name));
 
 const body = '[\n' + stations.map((s) => '  ' + JSON.stringify(s)).join(',\n') + '\n]\n';
 await writeFile(OUT, body);

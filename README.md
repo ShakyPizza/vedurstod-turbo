@@ -22,7 +22,7 @@ The header has a **sundial**: a compass seen from above. A lit sector shows toda
 
 ## Using the console
 
-- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one of the 38 main and capital-area stations in the list (`web/stations.json`, grouped by forecast region), or type any station number from the full list at `/stodvar`; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
+- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one of the 38 main and capital-area stations in the list (`web/stations.json`; the order is deliberate), or type any station number from the full list at `/stodvar`; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
 - **Presets.** Export your tabs to a `.json` file and import them on another device with the tab-strip buttons.
 - **Layout.** Click the lock in the tab strip to unlock the layout. Then drag panels to reorder them, resize them from the corner, or minimise them. The reset button restores the default layout.
 - **Version switch.** Click the version tag in the footer (`v1.0`) to open a rotary switch. Turn it to `0.8` to get the previous skin. Only the look changes; data and layout stay the same.

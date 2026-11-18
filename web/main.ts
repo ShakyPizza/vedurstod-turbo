@@ -633,21 +633,11 @@ function wireStationDialog() {
   };
 
   if (stationSelect && stationSelect.options.length <= 1) {
-    // Group by forecast region (stations.json is pre-sorted by region, name).
-    const groups = new Map<string, HTMLOptGroupElement>();
     for (const s of STATIONS) {
-      const region = s.region ?? 'Aðrar stöðvar';
-      let group = groups.get(region);
-      if (!group) {
-        group = document.createElement('optgroup');
-        group.label = region;
-        groups.set(region, group);
-        stationSelect.appendChild(group);
-      }
       const opt = document.createElement('option');
       opt.value = String(s.id);
       opt.textContent = s.name;
-      group.appendChild(opt);
+      stationSelect.appendChild(opt);
     }
     stationSelect.addEventListener('change', () => {
       const found = STATIONS.find((s) => String(s.id) === stationSelect.value);

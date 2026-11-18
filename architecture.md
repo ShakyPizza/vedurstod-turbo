@@ -92,7 +92,7 @@ interface Panel {
 
 - the source of truth is `localStorage['vedurstod:station']`
 - the default station is defined in both `web/station-config.ts` and `server/config.js`
-- the station dialog includes a dropdown populated from `web/stations.json`: 38 hand-picked main and capital-area stations, grouped by forecast region. To change the list, edit `CURATED` in `scripts/build-stations.mjs` and run it; it takes coordinates and regions from the IMO Weather API
+- the station dialog includes a dropdown populated from `web/stations.json`: 38 hand-picked main and capital-area stations in a deliberate order (keep it). To change the list, edit `CURATED` in `scripts/build-stations.mjs` and run it; it only takes coordinates from the IMO Weather API
 - the dialog links to `/stodvar`, a server-rendered page (`server/pages/stodvar.js`) that lists every active weather station with its number, region and a link to its vedur.is page. The new vedur.is has no such list. Vite proxies `/stodvar` to the backend in dev
 - typing a station number looks the station up through `/api/station-info`; if that service fails, the typed fields are used as-is
 - the id/name/lat/lon fields remain editable, so the dropdown is a convenience rather than the only input path
