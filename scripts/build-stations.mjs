@@ -3,17 +3,59 @@
 //
 //   node scripts/build-stations.mjs
 //
-// Keeps active automatic (sj) and manned (sk) stations that currently report
-// temperature or wind on xmlweather.vedur.is, which the obs panel reads.
-// Stations are grouped by IMO forecast region and sorted by Icelandic name.
+// The dropdown is a short, hand-picked list of main and capital-area
+// stations. To add or remove one, edit CURATED below and run the script.
+// Coordinates and forecast regions come from the API, so they stay correct.
+// Any other station can still be added by typing its number in the dialog.
 
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const API = 'https://api.vedur.is/weather';
-const XML = 'https://xmlweather.vedur.is/';
 const OUT = fileURLToPath(new URL('../web/stations.json', import.meta.url));
 const UA = 'vedurstod-turbo/0.8 (+weather dashboard)';
+
+// [station id, display name]
+const CURATED = [
+  [1471, 'Seltjarnarnes Suðurnes'],
+  [1475, 'Reykjavík'],
+  [1477, 'Reykjavíkurflugvöllur'],
+  [990, 'Keflavíkurflugvöllur'],
+  [1453, 'Garðskagaviti'],
+  [1395, 'Eyrarbakki'],
+  [6300, 'Selfoss'],
+  [6315, 'Hella'],
+  [6015, 'Vestmannaeyjabær'],
+  [6272, 'Kirkjubæjarklaustur'],
+  [6499, 'Skaftafell'],
+  [178, 'Stykkishólmur'],
+  [1924, 'Ólafsvík'],
+  [1938, 'Grundarfjörður'],
+  [2481, 'Hólmavík'],
+  [2319, 'Patreksfjörður'],
+  [2428, 'Bíldudalur'],
+  [2631, 'Flateyri'],
+  [2644, 'Ísafjörður Tungudalur'],
+  [2738, 'Bolungarvík'],
+  [3317, 'Blönduós'],
+  [3433, 'Sauðárkrókur flugvöllur'],
+  [3752, 'Siglufjörður'],
+  [3658, 'Ólafsfjörður'],
+  [3471, 'Akureyri'],
+  [3696, 'Húsavík'],
+  [4300, 'Mývatn'],
+  [4406, 'Krafla'],
+  [4500, 'Þeistareykir'],
+  [4614, 'Ásbyrgi'],
+  [4828, 'Raufarhöfn'],
+  [571, 'Egilsstaðaflugvöllur'],
+  [4060, 'Hallormsstaður'],
+  [4182, 'Seyðisfjörður'],
+  [5981, 'Eskifjörður'],
+  [5990, 'Neskaupstaður'],
+  [5544, 'Höfn í Hornafirði'],
+  [6935, 'Hveravellir'],
+];
 
 const REGIONS = [
   [1, 'Höfuðborgarsvæðið'],
@@ -28,10 +70,9 @@ const REGIONS = [
   [10, 'Suðausturland'],
   [11, 'Miðhálendið'],
 ];
-const KEEP_TYPES = new Set(['sj', 'sk']);
 
-// Stations the /stations list leaves out (other types) but that report data.
-const EXTRA = [{ id: 571, region: 'Austurland að Glettingi' }];
+// Stations the region lists leave out (other station types).
+const REGION_FALLBACK = { 571: 'Austurland að Glettingi' };
 
 async function getJson(url) {
   const res = await fetch(url, { headers: { 'user-agent': UA, 'x-vi-api-version': '2026-02-17' } });
@@ -39,48 +80,26 @@ async function getJson(url) {
   return res.json();
 }
 
-async function reporting(ids) {
-  const live = new Set();
-  for (let i = 0; i < ids.length; i += 60) {
-    const url = new URL(XML);
-    url.search = new URLSearchParams({
-      op_w: 'xml', type: 'obs', lang: 'is', view: 'xml', params: 'T;F', time: '1h',
-      ids: ids.slice(i, i + 60).join(';'),
-    }).toString();
-    const xml = await (await fetch(url, { headers: { 'user-agent': UA } })).text();
-    for (const m of xml.matchAll(/<station id="(\d+)"[^>]*>([\s\S]*?)<\/station>/g)) {
-      if (/<T>[^<]+<\/T>|<F>[^<]+<\/F>/.test(m[2])) live.add(Number(m[1]));
-    }
+const regionOf = new Map();
+for (const [regionId, region] of REGIONS) {
+  // The capital area also appears in Faxaflói; the first (smaller) region wins.
+  for (const s of await getJson(`${API}/stations?region_id=${regionId}`)) {
+    if (!regionOf.has(s.station)) regionOf.set(s.station, region);
   }
-  return live;
 }
 
 const round = (n) => Math.round(n * 10000) / 10000;
 const byName = new Intl.Collator('is').compare;
+const regionIndex = (r) => REGIONS.findIndex(([, name]) => name === r);
 
-const candidates = [];
-for (const [regionId, region] of REGIONS) {
-  const list = await getJson(`${API}/stations?region_id=${regionId}`);
-  for (const s of list) {
-    if (s.ending !== null || !KEEP_TYPES.has(s.type)) continue;
-    candidates.push({ id: s.station, name: s.name, lat: round(s.lat), lon: round(s.lon), region });
-  }
-}
-for (const { id, region } of EXTRA) {
-  if (candidates.some((c) => c.id === id)) continue;
+const stations = [];
+for (const [id, name] of CURATED) {
   const s = await getJson(`${API}/stations/${id}`);
-  candidates.push({ id, name: s.name, lat: round(s.lat), lon: round(s.lon), region });
+  const region = regionOf.get(id) ?? REGION_FALLBACK[id];
+  if (!region) throw new Error(`no region for station ${id}; add it to REGION_FALLBACK`);
+  stations.push({ id, name, lat: round(s.lat), lon: round(s.lon), region });
 }
-
-const live = await reporting(candidates.map((c) => c.id));
-const seen = new Set();
-const stations = candidates
-  .filter((c) => live.has(c.id) && !seen.has(c.id) && seen.add(c.id))
-  .sort((a, b) => {
-    const ra = REGIONS.findIndex(([, r]) => r === a.region);
-    const rb = REGIONS.findIndex(([, r]) => r === b.region);
-    return ra - rb || byName(a.name, b.name);
-  });
+stations.sort((a, b) => regionIndex(a.region) - regionIndex(b.region) || byName(a.name, b.name));
 
 const body = '[\n' + stations.map((s) => '  ' + JSON.stringify(s)).join(',\n') + '\n]\n';
 await writeFile(OUT, body);

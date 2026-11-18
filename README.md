@@ -22,7 +22,7 @@ The header has a **sundial**: a compass seen from above. A lit sector shows toda
 
 ## Using the console
 
-- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one from the list (`web/stations.json`, grouped by forecast region; rebuild it with `node scripts/build-stations.mjs`) or type a station number; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
+- **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one of the 38 main and capital-area stations in the list (`web/stations.json`, grouped by forecast region), or type any station number from the full list at `/stodvar`; the name and coordinates fill in automatically. Use **+** in the tab strip to add up to 6 station tabs.
 - **Presets.** Export your tabs to a `.json` file and import them on another device with the tab-strip buttons.
 - **Layout.** Click the lock in the tab strip to unlock the layout. Then drag panels to reorder them, resize them from the corner, or minimise them. The reset button restores the default layout.
 - **Version switch.** Click the version tag in the footer (`v1.0`) to open a rotary switch. Turn it to `0.8` to get the previous skin. Only the look changes; data and layout stay the same.
@@ -48,6 +48,7 @@ All settings are kept in the browser's `localStorage`. The server has no per-use
 | `/api/quakes` | Recent earthquakes |
 | `/api/station-info?id=ID` | Station name and coordinates, from the IMO Weather API |
 | `/api/health` | Liveness probe |
+| `/stodvar` | HTML page: all active weather stations with numbers, searchable (from the IMO Weather API, cached 24 h) |
 
 See [`architecture.md`](./architecture.md) for cache times and internals.
 

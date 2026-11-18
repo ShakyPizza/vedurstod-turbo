@@ -8,7 +8,8 @@ import { getForecast } from './sources/forecast.js';
 import { getWarnings } from './sources/warnings.js';
 import { getTextaspa } from './sources/textaspa.js';
 import { getQuakes } from './sources/quakes.js';
-import { getStationInfo } from './sources/stations.js';
+import { getStationInfo, getStationList } from './sources/stations.js';
+import { renderStationList } from './pages/stodvar.js';
 import { DEFAULT_STATION, resolveCoord, resolveStationId } from './config.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -41,6 +42,22 @@ function sendJson(res, status, body) {
     'cache-control': 'no-store',
   });
   res.end(payload);
+}
+
+async function sendStationList(res) {
+  try {
+    const html = renderStationList(await getStationList());
+    res.writeHead(200, {
+      'content-type': 'text/html; charset=utf-8',
+      'content-length': Buffer.byteLength(html),
+      'cache-control': 'public, max-age=3600',
+    });
+    res.end(html);
+  } catch (err) {
+    console.error('[stodvar] failed', err);
+    res.writeHead(502, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Ekki tókst að sækja stöðvalista frá Veðurstofunni. Reyndu aftur síðar.');
+  }
 }
 
 async function sendStatic(res, urlPath) {
@@ -135,6 +152,10 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
   if (url.pathname.startsWith('/api/')) {
     await handleApi(req, res, url.pathname, url.searchParams);
+    return;
+  }
+  if (url.pathname === '/stodvar' || url.pathname === '/stodvar/') {
+    await sendStationList(res);
     return;
   }
   await sendStatic(res, url.pathname);

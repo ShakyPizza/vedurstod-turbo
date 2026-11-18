@@ -64,6 +64,7 @@ browser
 | `/api/quakes` | earthquakes from the last 48 h in and around Iceland (`api.vedur.is/quakes`) | 1 min |
 | `/api/station-info?id=ID` | station name and coordinates (`api.vedur.is/weather/stations/{id}`) | 24 h |
 | `/api/health` | liveness probe | none |
+| `/stodvar` (HTML, not under `/api`) | full list of active weather stations | 24 h |
 
 Notes:
 
@@ -91,7 +92,8 @@ interface Panel {
 
 - the source of truth is `localStorage['vedurstod:station']`
 - the default station is defined in both `web/station-config.ts` and `server/config.js`
-- the station dialog includes a dropdown populated from `web/stations.json`, grouped by forecast region; `scripts/build-stations.mjs` rebuilds it from the IMO Weather API (active stations that report temperature or wind)
+- the station dialog includes a dropdown populated from `web/stations.json`: 38 hand-picked main and capital-area stations, grouped by forecast region. To change the list, edit `CURATED` in `scripts/build-stations.mjs` and run it; it takes coordinates and regions from the IMO Weather API
+- the dialog links to `/stodvar`, a server-rendered page (`server/pages/stodvar.js`) that lists every active weather station with its number, region and a link to its vedur.is page. The new vedur.is has no such list. Vite proxies `/stodvar` to the backend in dev
 - typing a station number looks the station up through `/api/station-info`; if that service fails, the typed fields are used as-is
 - the id/name/lat/lon fields remain editable, so the dropdown is a convenience rather than the only input path
 - every API URL includes station id plus lat/lon, so different browser tabs can target different stations against the same server safely
