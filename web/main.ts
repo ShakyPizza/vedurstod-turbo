@@ -14,6 +14,7 @@ import { mountVersionSwitch } from './version.ts';
 import { mountSundial } from './sundial.ts';
 import { mapPanel } from './panels/map.ts';
 import { DEFAULT_STATION } from './station-config.ts';
+import { attachStationSuggest, loadStationIndex } from './station-search.ts';
 import {
   MAX_TABS,
   buildPreset,
@@ -695,6 +696,17 @@ function wireStationDialog() {
     return s;
   };
 
+  // Suggest stations while the user types a name.
+  const nameInput = form.elements.namedItem('name') as HTMLInputElement;
+  const suggestList = document.getElementById('station-suggest') as HTMLUListElement | null;
+  const suggest = suggestList
+    ? attachStationSuggest(nameInput, suggestList, (s) => {
+        fill(s);
+        syncSelect(s);
+        setLookupStatus('', null);
+      })
+    : null;
+
   // Fill name and coordinates as soon as a station number is typed in.
   const idInput = form.elements.namedItem('id') as HTMLInputElement;
   idInput.addEventListener('change', async () => {
@@ -724,6 +736,8 @@ function wireStationDialog() {
   const openDialog = (mode: DialogMode) => {
     dialogMode = mode;
     setLookupStatus('', null);
+    suggest?.close();
+    void loadStationIndex(); // warm the name autocomplete
     if (mode === 'edit') {
       const s = activeStation();
       fill(s);

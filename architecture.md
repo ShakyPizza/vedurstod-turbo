@@ -62,6 +62,7 @@ browser
 | `/api/warnings?lat=…&lon=…` | active Icelandic weather warnings near a point (`api.vedur.is/cap`) | 2 min (one upstream call shared by all points) |
 | `/api/textaspa` | Icelandic text forecast from Hugin | 30 min |
 | `/api/quakes` | earthquakes from the last 48 h in and around Iceland (`api.vedur.is/quakes`) | 1 min |
+| `/api/stations` | all active weather stations, compact, for the name autocomplete (`api.vedur.is/weather/stations?region_id=…`) | 24 h |
 | `/api/station-info?id=ID` | station name and coordinates (`api.vedur.is/weather/stations/{id}`) | 24 h |
 | `/api/health` | liveness probe | none |
 | `/stodvar` (HTML, not under `/api`) | full list of active weather stations | 24 h |
@@ -94,6 +95,7 @@ interface Panel {
 - the default station is defined in both `web/station-config.ts` and `server/config.js`
 - the station dialog includes a dropdown populated from `web/stations.json`: 38 hand-picked main and capital-area stations in a deliberate order (keep it). To change the list, edit `CURATED` in `scripts/build-stations.mjs` and run it; it only takes coordinates from the IMO Weather API
 - the dialog links to `/stodvar`, a server-rendered page (`server/pages/stodvar.js`) that lists every active weather station with its number, region and a link to its vedur.is page. The new vedur.is has no such list. Vite proxies `/stodvar` to the backend in dev
+- typing in the name field suggests stations (`web/station-search.ts`). It loads `/api/stations` once per page and ranks matches by name prefix, then word prefix, then substring. Accents and þ/ð/æ/ö are folded, so `theista` finds Þeistareykir. Curated stations win ties. If the list fails to load, it searches `web/stations.json` only
 - typing a station number looks the station up through `/api/station-info`; if that service fails, the typed fields are used as-is
 - the id/name/lat/lon fields remain editable, so the dropdown is a convenience rather than the only input path
 - every API URL includes station id plus lat/lon, so different browser tabs can target different stations against the same server safely

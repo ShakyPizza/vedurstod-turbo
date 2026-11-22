@@ -82,6 +82,8 @@ async function loadStationList() {
         type: STATION_TYPES[s.type],
         owner: s.owner ? String(s.owner) : null,
         elevation: Number.isFinite(Number(s.ele)) ? Math.round(Number(s.ele)) : null,
+        lat: Number.isFinite(Number(s.lat)) ? Math.round(Number(s.lat) * 10000) / 10000 : null,
+        lon: Number.isFinite(Number(s.lon)) ? Math.round(Number(s.lon) * 10000) / 10000 : null,
       }))
       .sort((a, b) => byName(a.name, b.name));
     for (const s of inRegion) seen.add(s.id);
