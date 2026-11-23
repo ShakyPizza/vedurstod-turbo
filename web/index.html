@@ -96,10 +96,11 @@
           <span>Stöðvarnúmer <span class="station-form__lookup-status" id="station-lookup-status" aria-live="polite"></span></span>
           <input name="id" type="number" min="1" step="1" required />
         </label>
-        <label class="station-form__row">
-          <span>Nafn</span>
-          <input name="name" type="text" required />
-        </label>
+        <div class="station-form__row station-form__row--suggest">
+          <label for="station-name">Nafn</label>
+          <input id="station-name" name="name" type="text" required placeholder="Skrifaðu nafn stöðvar…" />
+          <ul id="station-suggest" class="station-suggest" hidden></ul>
+        </div>
         <label class="station-form__row">
           <span>Breiddargráða</span>
           <input name="lat" type="number" step="any" min="-90" max="90" required />
@@ -109,9 +110,9 @@
           <input name="lon" type="number" step="any" min="-180" max="180" required />
         </label>
         <p class="station-form__help">
-          Stöð sem er ekki í listanum má finna í
+          Byrjaðu að skrifa nafn stöðvar og veldu hana úr listanum, eða sláðu inn
+          stöðvarnúmer. Allar stöðvar eru líka í
           <a href="/stodvar" target="_blank" rel="noopener">heildarlista veðurstöðva</a>.
-          Sláðu inn stöðvarnúmerið og nafn og hnit fyllast sjálfkrafa.
         </p>
         <menu class="station-form__buttons">
           <button type="button" value="remove" id="station-remove" hidden>Fjarlægja flipa</button>

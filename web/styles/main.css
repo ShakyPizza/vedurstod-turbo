@@ -313,6 +313,76 @@ body[data-modal='true'] .console__footer {
   outline-offset: 1px;
 }
 
+.station-form__row input::placeholder {
+  color: var(--crt-amber-dim);
+  opacity: 0.55;
+  text-shadow: none;
+}
+
+/* Name autocomplete: a CRT readout that drops down under the name field. */
+.station-form__row--suggest {
+  position: relative;
+}
+
+.station-suggest {
+  all: unset;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  margin-top: 4px;
+  max-height: 264px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--screen-bg-amber);
+  border: 1px solid var(--crt-amber-dim);
+  border-radius: 4px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+}
+
+.station-suggest[hidden] {
+  display: none;
+}
+
+.station-suggest__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.station-suggest__name {
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  color: var(--crt-amber);
+  text-shadow: 0 0 6px var(--crt-amber-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.station-suggest__meta {
+  flex: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--label-dim);
+}
+
+.station-suggest__item[aria-selected='true'] {
+  background: rgba(245, 166, 35, 0.14);
+}
+
+.station-suggest__item[aria-selected='true'] .station-suggest__name {
+  color: #ffd27a;
+}
+
 .station-form__help {
   margin: 2px 0 0;
   font-size: 11px;

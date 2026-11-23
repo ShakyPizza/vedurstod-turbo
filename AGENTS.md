@@ -37,7 +37,7 @@ npm run preview      # Vite preview of built dist/
 - **Warnings** (`server/sources/warnings.js`): CAP API `active/detailed/all` (204 = none active), filtered to category `Met`, then a ray-casting point-in-polygon test against station coords.
 - **Text forecast**: `server/sources/textaspa.js` is active and the output is rendered inside `web/panels/obs.ts`.
 - **Moon terminator** (`web/panels/moon.ts`): `moonLitPath(R, k, phase)` computes SVG arc path for the illuminated region. Waxing/waning and crescent/gibbous determine arc sweep flags.
-- **Station selection**: `web/stations.json` is a short curated dropdown list whose order is deliberate; do not sort or regroup it (edit `CURATED` in `scripts/build-stations.mjs`, then run it). Other stations are added by number; `/stodvar` (`server/pages/stodvar.js`) lists them all. The dialog fields remain editable for custom stations.
+- **Station selection**: `web/stations.json` is a short curated dropdown list whose order is deliberate; do not sort or regroup it (edit `CURATED` in `scripts/build-stations.mjs`, then run it). Other stations are found by typing a name (autocomplete in `web/station-search.ts`, fed by `/api/stations`) or added by number; `/stodvar` (`server/pages/stodvar.js`) lists them all. The dialog fields remain editable for custom stations.
 
 ## Adding a new data stream (tides, earthquakes, traffic)
 

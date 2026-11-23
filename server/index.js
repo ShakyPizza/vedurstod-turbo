@@ -114,6 +114,15 @@ async function handleApi(req, res, pathname, query) {
         return sendJson(res, 200, await getTextaspa());
       case '/api/quakes':
         return sendJson(res, 200, await getQuakes());
+      case '/api/stations': {
+        // Compact list for the name autocomplete in the station dialog.
+        const { stations } = await getStationList();
+        return sendJson(res, 200, {
+          stations: stations
+            .filter((s) => s.lat !== null && s.lon !== null)
+            .map(({ id, name, region, lat, lon }) => ({ id, name, region, lat, lon })),
+        });
+      }
       case '/api/station-info': {
         const raw = query.get('id');
         const id = Number(raw);
