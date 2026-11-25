@@ -3439,3 +3439,46 @@ body {
     font-size: clamp(12px, 3.6vw, 17px);
   }
 }
+
+/* ---- Narrow obs panel ----
+   The obs panel keeps half the console width down to 1100px, so its right
+   column can get as narrow as about 180px. The viewport media queries do
+   not see that, so this uses a container query on the column itself.
+   When the column is narrow, HITI shrinks to fill the space that is left
+   and the three small readouts stack in one column. */
+.obs__right {
+  container-type: inline-size;
+  container-name: obs-right;
+}
+
+.readouts--sub {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@container obs-right (max-width: 300px) {
+  .readouts--sub {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .readouts--sub > :nth-child(3) {
+    grid-column: auto;
+  }
+
+  .readout--hero {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .readout__screen--hero {
+    flex: 1 1 auto;
+    min-height: 64px;
+    padding: 10px 14px;
+  }
+
+  .readout__screen--hero .readout__unit {
+    top: 6px;
+    right: 10px;
+    font-size: 13px;
+  }
+}
