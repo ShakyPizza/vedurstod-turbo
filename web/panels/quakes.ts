@@ -82,10 +82,16 @@ function renderRow(q: Quake, now: Date, seenAt: number): HTMLElement {
       el('div', { class: 'quake-row__place' }, q.place ?? '—'),
       el(
         'div',
-        { class: 'quake-row__sub' },
-        `${TIME_FMT.format(new Date(q.time))} · ${timeAgo(q.time, now)} · ${
-          Number.isFinite(q.depth) ? `${q.depth.toFixed(1)} km` : '—'
-        }`,
+        {
+          class: 'quake-row__sub',
+          title: `${TIME_FMT.format(new Date(q.time))} · ${timeAgo(q.time, now)} · ${
+            Number.isFinite(q.depth) ? `${q.depth.toFixed(1)} km` : '—'
+          }`,
+        },
+        el('span', {}, TIME_FMT.format(new Date(q.time))),
+        // "fyrir X síðan" is dropped first when the row is narrow (CSS).
+        el('span', { class: 'quake-row__ago' }, ` · ${timeAgo(q.time, now)}`),
+        el('span', {}, ` · ${Number.isFinite(q.depth) ? `${q.depth.toFixed(1)} km` : '—'}`),
       ),
     ),
   );

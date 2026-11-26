@@ -3552,3 +3552,49 @@ body {
     font-size: 13px;
   }
 }
+
+/* ---- Narrow moon, tides and quakes panels ----
+   These panels get narrow at viewport sizes the media queries do not
+   catch (moon and tides keep a third of the console down to 1100px).
+   The countdown digits scale with the width of their own cell instead of
+   the viewport, and never wrap. Sixtyfour is about 0.92em per character,
+   so an 8-character value ("12d 03st") needs about 7.4em. */
+.moon__countdown-cell,
+.tides__cell {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.moon__countdown-value {
+  font-size: clamp(9px, calc(100cqi / 7.6), 21px);
+  white-space: nowrap;
+}
+
+.tides__count {
+  font-size: clamp(9px, calc(100cqi / 7.6), 18px);
+  white-space: nowrap;
+}
+
+.panel__body--tides {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* Quake rows: keep the time line to one line. A second line made the
+   last row in each column taller than the space left, so it was cut off.
+   When the row is narrow, drop "fyrir X síðan" first (the full text is in
+   the tooltip), then cut the rest with an ellipsis. */
+.quake-row__main {
+  container-type: inline-size;
+}
+
+.quake-row__sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@container (max-width: 200px) {
+  .quake-row__ago {
+    display: none;
+  }
+}
