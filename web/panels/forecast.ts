@@ -7,20 +7,29 @@ type Sky =
   | 'cloudy'
   | 'overcast'
   | 'fog'
+  | 'drizzle'
   | 'rain'
+  | 'downpour'
   | 'snow'
   | 'sleet'
   | 'thunder'
   | 'unknown';
 
-function classifySky(state: string | null): Sky {
+// vedur.is has no "heavy rain" state, so heavy rain is "Rigning" with at
+// least this much precipitation per hour (a common threshold for heavy rain).
+const DOWNPOUR_MM_PER_H = 4;
+
+function classifySky(state: string | null, mmPerHour: number | null = null): Sky {
   const s = (state ?? '').toLowerCase();
   if (!s) return 'unknown';
   if (s.includes('þrum')) return 'thunder';
   if (s.includes('slydd')) return 'sleet';
   if (s.includes('snjó') || /\bél\b/.test(s) || s.includes('éljag')) return 'snow';
-  if (s.includes('rign') || s.includes('skúr') || s.includes('súld') || s.includes('dropar'))
+  if (s.includes('rign') || s.includes('skúr') || s.includes('súld') || s.includes('dropar')) {
+    if (s.includes('lítils háttar') || s.includes('súld') || s.includes('dropar')) return 'drizzle';
+    if (mmPerHour !== null && mmPerHour >= DOWNPOUR_MM_PER_H) return 'downpour';
     return 'rain';
+  }
   if (s.includes('þoka') || s.includes('þoku') || s.includes('mistur') || s.includes('móða'))
     return 'fog';
   if (s.includes('heiðskírt') || s.includes('heiðrík')) return 'clear';
@@ -36,7 +45,9 @@ const SKY_LABEL: Record<Sky, string> = {
   cloudy: 'SKÝJAÐ',
   overcast: 'ALSKÝJAÐ',
   fog: 'ÞOKA',
+  drizzle: 'LÍTIL RIGNING',
   rain: 'RIGNING',
+  downpour: 'MIKIL RIGNING',
   snow: 'SNJÓR',
   sleet: 'SLYDDA',
   thunder: 'ÞRUMUR',
@@ -109,6 +120,19 @@ const PATTERNS: Record<Sky, string[]> = {
     '.XXXXXXXXX.',
     '...........',
   ],
+  drizzle: [
+    '...XXXXX...',
+    '..XXXXXXX..',
+    '.XXXXXXXXX.',
+    'XXXXXXXXXXX',
+    '.XXXXXXXXX.',
+    '...........',
+    'X.......X..',
+    'X.......X..',
+    '.X...X...X.',
+    '.....X.....',
+    '...........',
+  ],
   rain: [
     '...XXXXX...',
     '..XXXXXXX..',
@@ -120,6 +144,20 @@ const PATTERNS: Record<Sky, string[]> = {
     'X...X...X..',
     '.X...X...X.',
     '.X...X...X.',
+    '..X...X...X',
+  ],
+  // One row of cloud less than rain, so the drops get an extra row.
+  downpour: [
+    '..XXXXXXX..',
+    '.XXXXXXXXX.',
+    'XXXXXXXXXXX',
+    '.XXXXXXXXX.',
+    '...........',
+    'X...X...X..',
+    'X...X...X..',
+    '.X...X...X.',
+    '.X...X...X.',
+    '..X...X...X',
     '..X...X...X',
   ],
   snow: [
@@ -213,6 +251,7 @@ interface ForecastStep {
   windSpeed: number | null;
   windDirection: string | null;
   state: string | null;
+  precipitation?: number | null;
 }
 
 interface Forecast {
@@ -245,8 +284,20 @@ function groupByDay(steps: ForecastStep[]): Map<string, ForecastStep[]> {
   return out;
 }
 
-function buildStep(step: ForecastStep): HTMLElement {
-  const sky = classifySky(step.state);
+// R is the precipitation since the previous step, and steps get longer
+// further out, so divide by the step length to get mm per hour.
+function mmPerHour(step: ForecastStep, prev: ForecastStep | undefined): number | null {
+  if (step.precipitation == null) return null;
+  let hours = 1;
+  if (prev?.time && step.time) {
+    const h = (new Date(step.time).getTime() - new Date(prev.time).getTime()) / 3_600_000;
+    if (h > 0) hours = h;
+  }
+  return step.precipitation / hours;
+}
+
+function buildStep(step: ForecastStep, prev: ForecastStep | undefined): HTMLElement {
+  const sky = classifySky(step.state, mmPerHour(step, prev));
   const skyBox = el(
     'div',
     { class: `forecast__sky forecast__sky--${sky}`, title: SKY_LABEL[sky] },
@@ -271,14 +322,18 @@ function buildStep(step: ForecastStep): HTMLElement {
   return cell;
 }
 
-function buildDay(day: string, steps: ForecastStep[]): HTMLElement {
+function buildDay(
+  day: string,
+  steps: ForecastStep[],
+  prevOf: Map<ForecastStep, ForecastStep>,
+): HTMLElement {
   const header = el(
     'header',
     { class: 'forecast__day-header' },
     el('span', { class: 'forecast__day-label' }, DAY_FMT.format(new Date(day + 'T12:00:00Z'))),
   );
   const strip = el('div', { class: 'forecast__strip' });
-  for (const s of steps) strip.append(buildStep(s));
+  for (const s of steps) strip.append(buildStep(s, prevOf.get(s)));
   return el('section', { class: 'forecast__day' }, header, strip);
 }
 
@@ -321,10 +376,14 @@ export function forecastPanel(): Panel {
         body.innerHTML = '';
         const now = Date.now();
         const future = data.steps.filter((s) => s.time && new Date(s.time).getTime() >= now - 60 * 60 * 1000);
+        const prevOf = new Map<ForecastStep, ForecastStep>();
+        data.steps.forEach((s, i) => {
+          if (i > 0) prevOf.set(s, data.steps[i - 1]);
+        });
         const days = groupByDay(future);
         let count = 0;
         for (const [day, steps] of days) {
-          body.append(buildDay(day, steps));
+          body.append(buildDay(day, steps, prevOf));
           if (++count >= 7) break;
         }
 

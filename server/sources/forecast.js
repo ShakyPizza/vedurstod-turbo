@@ -30,6 +30,9 @@ async function load(stationId) {
       windSpeed: num(e.F),
       windDirection: e.D ? String(e.D).trim() : null,
       state: e.W ? String(e.W) : null,
+      // Precipitation in mm since the previous step (R). Steps are 1 h at
+      // first and 3 h or 6 h further out.
+      precipitation: num(e.R),
     })),
   };
 }
