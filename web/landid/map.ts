@@ -1,9 +1,9 @@
 // The Landsspá map: coastline, graticule and one readout module per
 // station. Modules sit beside their station's pin and are placed so they do
 // not cover each other; a module that cannot fit is hidden (overview
-// stations are always kept). The Hálendið view also draws glaciers, lakes,
-// the highland crossings and a few landmark names; a name that would cover a
-// station is left out.
+// stations are always kept). The whole-country and Hálendið views also draw
+// glaciers, lakes and the highland crossings; Hálendið adds landmark names,
+// and a name that would cover a station is left out.
 
 import { project } from '../panels/iceland-shape.ts';
 import { METRO_LAND_PATH } from '../panels/metro-shape.ts';
@@ -43,7 +43,7 @@ function loadCoastHi(): Promise<Coast | null> {
 
 const ZOOMED_BELOW = 700; // viewBox width under which the detailed coast is used
 
-interface Highland {
+interface Layers {
   q: number;
   /** One path per polygon (outer ring plus holes). */
   glaciers: string[];
@@ -51,15 +51,24 @@ interface Highland {
   roads: string;
 }
 
-// Glaciers, lakes and roads for the Hálendið view (~56 kB), fetched when needed.
-let highland: Highland | null = null;
-let highlandLoad: Promise<Highland | null> | null = null;
-function loadHighland(): Promise<Highland | null> {
-  highlandLoad ??= fetch('/data/highland.json')
-    .then((r) => (r.ok ? (r.json() as Promise<Highland>) : null))
-    .then((h) => (highland = h))
-    .catch(() => null);
-  return highlandLoad;
+// Glaciers, lakes and roads: country.json (~23 kB) for the whole country,
+// highland.json (~58 kB, more detail) for Hálendið. Fetched when needed.
+type LayerName = NonNullable<Region['layers']>;
+const layerData = new Map<LayerName, Layers>();
+const layerLoads = new Map<LayerName, Promise<Layers | null>>();
+function loadLayers(name: LayerName): Promise<Layers | null> {
+  let p = layerLoads.get(name);
+  if (!p) {
+    p = fetch(`/data/${name}.json`)
+      .then((r) => (r.ok ? (r.json() as Promise<Layers>) : null))
+      .then((l) => {
+        if (l) layerData.set(name, l);
+        return l;
+      })
+      .catch(() => null);
+    layerLoads.set(name, p);
+  }
+  return p;
 }
 
 interface LabelItem {
@@ -91,7 +100,7 @@ const overlap = (a: Rect, b: Rect) =>
 
 let uid = 0;
 
-function mapSvg(vb: ViewBox, layers: Highland | null): string {
+function mapSvg(vb: ViewBox, layers: Layers | null): string {
   const id = `lpm${++uid}`;
   const k = vb.w / 1000;
   let grid = '';
@@ -165,7 +174,7 @@ export function createMap(wrap: HTMLElement, onSelect: (id: number) => void): Ma
   let svgHost: HTMLElement;
 
   function drawCoast() {
-    svgHost.innerHTML = mapSvg(vb, region.highland ? highland : null);
+    svgHost.innerHTML = mapSvg(vb, region.layers ? (layerData.get(region.layers) ?? null) : null);
   }
 
   function setRegion(r: Region) {
@@ -187,10 +196,10 @@ export function createMap(wrap: HTMLElement, onSelect: (id: number) => void): Ma
         if (region === want && coastHi) drawCoast();
       });
     }
-    if (r.highland && !highland) {
+    if (r.layers && !layerData.has(r.layers)) {
       const want = r;
-      void loadHighland().then(() => {
-        if (region === want && highland) drawCoast();
+      void loadLayers(r.layers).then((l) => {
+        if (region === want && l) drawCoast();
       });
     }
     items = regionStations(r).map((def) => {

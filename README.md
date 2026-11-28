@@ -105,7 +105,7 @@ Important:
 ### 1.1 (November 2026)
 
 - New **Landsspá** page (`/landid`): a forecast map for the whole country, in the spirit of the retired vedur.is "Staðaspár" map. The same 25 overview stations, seven regions with more stations each, a time tape with step and play, a station panel with day cards, daily rain and a chart, and the **Fjarriti** hour-by-hour list.
-- Detailed OpenStreetMap coastline for the zoomed regions; glaciers, lakes, the Kjölur and Sprengisandur crossings and landmark names on the Hálendið view.
+- Detailed OpenStreetMap coastline for the zoomed regions; glaciers, lakes and the Kjölur and Sprengisandur crossings on the whole-country and Hálendið views, with landmark names on Hálendið.
 - Light (taupe) and dark themes on the Landsspá page.
 - Start page: new visitors open on the Landsspá, existing users keep their dashboard; **Upphafssíða** switches.
 - **Landsspá** tab in the dashboard tab strip.

@@ -38,8 +38,8 @@ export interface Region {
   metro?: boolean;
   /** [lat min, lat max, lon min, lon max] */
   bbox?: [number, number, number, number];
-  /** Draw glaciers, lakes and the highland crossings (data/highland.json). */
-  highland?: boolean;
+  /** Draw glaciers, lakes and the highland crossings from data/<layers>.json. */
+  layers?: 'highland' | 'country';
   labels?: MapLabel[];
 }
 
@@ -62,14 +62,14 @@ const HIGHLAND_LABELS: MapLabel[] = [
 ];
 
 export const REGIONS: Region[] = [
-  { key: 'landid', name: 'Allt landið' },
+  { key: 'landid', name: 'Allt landið', layers: 'country' },
   { key: 'hofudborgarsvaedid', name: 'Höfuðborgarsvæðið', metro: true },
   { key: 'sudurnes', name: 'Suðurnes', bbox: [63.78, 64.13, -22.85, -21.8] },
   { key: 'sudvesturland', name: 'Suðvesturland', bbox: [63.3, 65.2, -24.1, -19.3] },
   { key: 'nordvesturland', name: 'Norðvesturland', bbox: [64.9, 66.55, -24.6, -18.6] },
   { key: 'nordausturland', name: 'Norðausturland', bbox: [64.95, 66.6, -19.4, -13.4] },
   { key: 'sudausturland', name: 'Suðausturland', bbox: [63.3, 65.35, -19.6, -13.4] },
-  { key: 'halendid', name: 'Hálendið', bbox: [64.0, 65.45, -20.6, -15.4], highland: true, labels: HIGHLAND_LABELS },
+  { key: 'halendid', name: 'Hálendið', bbox: [64.0, 65.45, -20.6, -15.4], layers: 'highland', labels: HIGHLAND_LABELS },
 ];
 
 export function inCapitalArea(s: StationDef): boolean {

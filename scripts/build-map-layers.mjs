@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-// Rebuild web/public/data/highland.json, the extra map layers for the
-// Hálendið view of the Landsspá page: glaciers, large lakes and reservoirs,
-// and the two highland crossings (Kjalvegur, road 35, and Sprengisandsleið, F26).
+// Rebuild the extra map layers for the Landsspá page: glaciers, large lakes
+// and reservoirs, and the two highland crossings (Kjalvegur, road 35, and
+// Sprengisandsleið, F26). Two files:
+// - web/public/data/highland.json: the Hálendið view, detailed.
+// - web/public/data/country.json: the whole-country view, coarser, with
+//   only the larger glaciers and lakes.
 //
-//   node scripts/build-highland.mjs
+//   node scripts/build-map-layers.mjs
 //
 // Same projection and path encoding as scripts/build-coastline.mjs: integer
 // relative moves in map units × q, drawn with transform="scale(1/q)".
@@ -18,18 +21,17 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
-const BBOX = '63.6,-21.4,65.7,-14.6';
-const QUERY = `[out:json][timeout:300];
+const query = (bbox) => `[out:json][timeout:300];
 (
-  way["natural"="glacier"](${BBOX});
-  relation["natural"="glacier"](${BBOX});
-  way["natural"="water"]["water"~"^(lake|reservoir)$"](${BBOX});
-  relation["natural"="water"]["water"~"^(lake|reservoir)$"](${BBOX});
-  way["highway"]["name"~"^(Kjalvegur|Sprengisandsleið)$"](${BBOX});
+  way["natural"="glacier"](${bbox});
+  relation["natural"="glacier"](${bbox});
+  way["natural"="water"]["water"~"^(lake|reservoir)$"](${bbox});
+  relation["natural"="water"]["water"~"^(lake|reservoir)$"](${bbox});
+  way["highway"]["name"~"^(Kjalvegur|Sprengisandsleið)$"](${bbox});
 );
 out geom qt;`;
-const UA = 'vedurstod-turbo/0.8 (+weather dashboard; highland map build)';
-const OUT = fileURLToPath(new URL('../web/public/data/highland.json', import.meta.url));
+const UA = 'vedurstod-turbo/0.8 (+weather dashboard; map layer build)';
+const out = (name) => fileURLToPath(new URL(`../web/public/data/${name}.json`, import.meta.url));
 
 // Same projection as web/panels/iceland-shape.ts. Keep in step.
 const LON0 = -24.75;
@@ -38,22 +40,19 @@ const COS = 0.42261826174069944;
 const K = 204.86593793528124;
 const project = (lat, lon) => [(lon - LON0) * COS * K, (LAT1 - lat) * K];
 
-const Q = 20;
-const TOL = 0.12; // map units (1 unit ≈ 540 m); about half a pixel on the Hálendið view
 const KM2 = 1 / 0.2865; // map units² per km²
-const MIN_GLACIER = 3 * KM2;
-const MIN_LAKE = 4 * KM2;
-const MIN_HOLE = 0.3 * KM2;
 
-console.log('fetching highland layers from Overpass…');
-const res = await fetch(OVERPASS, {
-  method: 'POST',
-  headers: { 'user-agent': UA, 'content-type': 'application/x-www-form-urlencoded' },
-  body: new URLSearchParams({ data: QUERY }),
-});
-if (!res.ok) throw new Error(`Overpass ${res.status}`);
-const elements = (await res.json()).elements;
-console.log(`${elements.length} elements`);
+// tol: Douglas-Peucker tolerance in map units (1 unit ≈ 540 m), about half a
+// screen pixel on that view. Areas in km².
+const LEVELS = [
+  { name: 'highland', bbox: '63.6,-21.4,65.7,-14.6', q: 20, tol: 0.12, glacier: 3, lake: 4, hole: 0.3 },
+  { name: 'country', bbox: '63.2,-24.6,66.6,-13.4', q: 10, tol: 0.35, glacier: 5, lake: 8, hole: 2 },
+];
+
+let Q;
+let TOL;
+let MIN_HOLE;
+let elements = [];
 
 const key = (p) => `${p.lat.toFixed(7)},${p.lon.toFixed(7)}`;
 
@@ -174,21 +173,36 @@ function polygons(isKind, minArea) {
   return out.filter((rings) => rings.length > 0);
 }
 
-const glaciers = polygons((t) => t.natural === 'glacier', MIN_GLACIER);
-const lakes = polygons((t) => t.natural === 'water' && /^(lake|reservoir)$/.test(t.water ?? ''), MIN_LAKE);
-const roads = elements
-  .filter((e) => e.type === 'way' && e.tags?.highway && /^(Kjalvegur|Sprengisandsleið)$/.test(e.tags.name ?? '') && e.geometry)
-  .map((w) => simplify(projectLine(w.geometry), TOL));
+for (const level of LEVELS) {
+  Q = level.q;
+  TOL = level.tol;
+  MIN_HOLE = level.hole * KM2;
+  console.log(`${level.name}: fetching from Overpass…`);
+  const res = await fetch(OVERPASS, {
+    method: 'POST',
+    headers: { 'user-agent': UA, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ data: query(level.bbox) }),
+  });
+  if (!res.ok) throw new Error(`Overpass ${res.status}`);
+  elements = (await res.json()).elements;
 
-const out = {
-  q: Q,
-  glaciers: glaciers.map((rings) => encode(rings, true)),
-  lakes: lakes.map((rings) => encode(rings, true)),
-  roads: encode(roads, false),
-};
-await mkdir(dirname(OUT), { recursive: true });
-await writeFile(OUT, JSON.stringify(out));
-console.log(
-  `glaciers: ${glaciers.length} polygons, lakes: ${lakes.length} polygons, roads: ${roads.length} lines; ` +
-    `${(JSON.stringify(out).length / 1024).toFixed(0)} kB → ${OUT}`,
-);
+  const glaciers = polygons((t) => t.natural === 'glacier', level.glacier * KM2);
+  const lakes = polygons((t) => t.natural === 'water' && /^(lake|reservoir)$/.test(t.water ?? ''), level.lake * KM2);
+  const roads = elements
+    .filter((e) => e.type === 'way' && e.tags?.highway && /^(Kjalvegur|Sprengisandsleið)$/.test(e.tags.name ?? '') && e.geometry)
+    .map((w) => simplify(projectLine(w.geometry), TOL));
+
+  const data = {
+    q: Q,
+    glaciers: glaciers.map((rings) => encode(rings, true)),
+    lakes: lakes.map((rings) => encode(rings, true)),
+    roads: encode(roads, false),
+  };
+  const file = out(level.name);
+  await mkdir(dirname(file), { recursive: true });
+  await writeFile(file, JSON.stringify(data));
+  console.log(
+    `${level.name}: glaciers ${glaciers.length} polygons, lakes ${lakes.length} polygons, roads ${roads.length} lines; ` +
+      `${(JSON.stringify(data).length / 1024).toFixed(0)} kB → ${file}`,
+  );
+}

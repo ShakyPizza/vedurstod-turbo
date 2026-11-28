@@ -42,7 +42,7 @@ browser
 │   ├── landid/          (the Landsspá page: main, data, map, timebar, detail, coast-lo)
 │   ├── public/start.js  (start-page choice, loaded by both pages)
 │   ├── public/data/coast-hi.json
-│   ├── public/data/highland.json
+│   ├── public/data/highland.json, country.json
 │   ├── station-config.ts
 │   ├── stations.json
 │   ├── styles/main.css
@@ -56,7 +56,7 @@ browser
 ├── scripts/
 │   ├── build-landsspa-stations.mjs
 │   ├── build-coastline.mjs
-│   ├── build-highland.mjs
+│   ├── build-map-layers.mjs
 │   └── deploy-traefikvm.sh
 ├── Dockerfile
 └── docker-compose.yml
@@ -128,7 +128,7 @@ A second Vite page (`web/landid.html`, entry `web/landid/main.ts`) with the nati
 - **Regions.** Seven views, defined in `web/landid/data.ts`: the whole country (overview stations only), the capital area (its own coastline and projection from `metro-shape.ts`), and five bounding boxes (Suðurnes, SV, NV, NA, SA) plus the highlands. Zoomed views show every catalogue station in the box; labels that would overlap are hidden.
 - **Data.** One `/api/landsspa` call per region. The server fetches all catalogue stations from xmlweather in one cached call (with `params=F;D;T;W;R`) and returns the requested subset on one shared time axis. Weather words are sent once in a `weather` list and referenced by index.
 - **Coastline.** OpenStreetMap `natural=coastline`, built by `scripts/build-coastline.mjs` in the projection of `iceland-shape.ts`. Two detail levels: `web/landid/coast-lo.ts` (bundled, whole country) and `web/public/data/coast-hi.json` (about 200 kB, 77 kB gzipped, fetched only when a zoomed region opens). Paths are integer relative moves, drawn with `scale(1/q)`.
-- **Hálendið layers.** The highland view also draws glaciers, large lakes and reservoirs, and the two crossings (Kjalvegur and Sprengisandsleið) from `web/public/data/highland.json` (about 58 kB, fetched only for that view), built by `scripts/build-highland.mjs` from OpenStreetMap. Landmark names (glaciers, lakes, peaks, Landmannalaugar, the crossings) are listed in `HIGHLAND_LABELS` in `web/landid/data.ts`. They are placed after the station readouts and hidden where they would cover one.
+- **Glaciers, lakes and crossings.** The whole-country and Hálendið views also draw glaciers, large lakes and reservoirs, and the two crossings (Kjalvegur and Sprengisandsleið). `scripts/build-map-layers.mjs` builds them from OpenStreetMap at two detail levels: `web/public/data/country.json` (about 23 kB, only glaciers over 5 km² and lakes over 8 km²) and `highland.json` (about 58 kB). A region picks one with `layers`; the file is fetched only when that view opens. Each glacier and lake is its own path, drawn as a wide outline under a fill, because OSM maps the large glaciers as overlapping outlet glaciers. Landmark names are shown on Hálendið only: `HIGHLAND_LABELS` in `web/landid/data.ts`, placed in list order after the station readouts and hidden where they would cover one.
 - **Layout.** On screens 1100 px or wider the Fjarriti (hour-by-hour list) sits under the region buttons; on narrower screens the regions go above the map and the Fjarriti moves under the station panel, in up to three columns.
 - **Same parts as the dashboard.** The page loads `main.css` and `version-switch.css` and uses the dashboard's markup for the header (nameplate, sundial, station, clock), the tab strip (Landsspá tab, the saved station tabs as links back to `/`), panel shells and titles, status lamps and the footer. `landid.css` only adds the page's own parts and the light theme. Do not restyle the shared parts there beyond the light-theme overrides.
 - **Theme.** Light (taupe) by default, dark on the switch in the tab strip. Dark is the dashboard's look unchanged. Light sets `--bg-h/s/l` (the dashboard derives every metal shade from these) and a few label and key colours; screens and panel titles stay dark glass in both themes. Stored in `localStorage['vedurstod:landid-theme']`; an inline script applies it before the page draws.
