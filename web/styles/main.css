@@ -2101,6 +2101,34 @@ body.panel-drag-active * {
   transition: color 0.15s, background 0.15s;
 }
 
+/* Link to the Landsspá page: a tab that leads to another page, set apart
+   from the station tabs by a gap and a dashed edge. */
+.tabstrip__page-link {
+  flex: none;
+  margin-right: 10px;
+  align-self: flex-end;
+  text-decoration: none;
+  color: var(--label);
+  border-style: dashed;
+  border-color: #3d342d;
+}
+
+/* A small silhouette of Iceland, simplified from the map coastline. It is a
+   mask, so it takes the tab's text colour. */
+.tabstrip__page-link::before {
+  content: '';
+  flex: none;
+  width: 18px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 67'%3E%3Cpath d='M91 3L85 9L90 12L88 17L93 16L91 22L93 19L99 22L96 27L100 27L95 29L100 29L99 33L94 32L98 36L93 39L91 37L93 40L88 48L82 46L70 59L69 56L61 60L58 66L39 64L37 58L36 61L30 55L17 59L17 53L23 53L28 46L22 48L27 40L22 45L19 37L6 39L4 35L25 32L25 29L20 30L19 27L26 23L21 24L22 20L6 24L0 22L2 19L7 21L4 16L11 18L6 14L12 15L7 11L11 12L10 7L19 15L20 9L14 6L20 6L13 5L13 2L19 2L29 11L27 12L29 17L25 16L31 29L33 20L35 18L37 22L39 19L38 10L40 9L46 17L46 10L52 7L59 19L57 8L63 13L67 7L74 8L73 1L77 0L83 8L91 3Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 67'%3E%3Cpath d='M91 3L85 9L90 12L88 17L93 16L91 22L93 19L99 22L96 27L100 27L95 29L100 29L99 33L94 32L98 36L93 39L91 37L93 40L88 48L82 46L70 59L69 56L61 60L58 66L39 64L37 58L36 61L30 55L17 59L17 53L23 53L28 46L22 48L27 40L22 45L19 37L6 39L4 35L25 32L25 29L20 30L19 27L26 23L21 24L22 20L6 24L0 22L2 19L7 21L4 16L11 18L6 14L12 15L7 11L11 12L10 7L19 15L20 9L14 6L20 6L13 5L13 2L19 2L29 11L27 12L29 17L25 16L31 29L33 20L35 18L37 22L39 19L38 10L40 9L46 17L46 10L52 7L59 19L57 8L63 13L67 7L74 8L73 1L77 0L83 8L91 3Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.tabstrip__page-link:hover {
+  color: var(--crt-amber);
+}
+
 .tabstrip__tab-label {
   white-space: nowrap;
   overflow: hidden;

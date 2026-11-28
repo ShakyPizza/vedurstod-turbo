@@ -1,7 +1,7 @@
 import type { Panel } from './types.ts';
 import { el, svg, getJson } from './types.ts';
 
-type Sky =
+export type Sky =
   | 'clear'
   | 'partly'
   | 'cloudy'
@@ -19,7 +19,7 @@ type Sky =
 // least this much precipitation per hour (a common threshold for heavy rain).
 const DOWNPOUR_MM_PER_H = 4;
 
-function classifySky(state: string | null, mmPerHour: number | null = null): Sky {
+export function classifySky(state: string | null, mmPerHour: number | null = null): Sky {
   const s = (state ?? '').toLowerCase();
   if (!s) return 'unknown';
   if (s.includes('þrum')) return 'thunder';
@@ -39,7 +39,7 @@ function classifySky(state: string | null, mmPerHour: number | null = null): Sky
   return 'unknown';
 }
 
-const SKY_LABEL: Record<Sky, string> = {
+export const SKY_LABEL: Record<Sky, string> = {
   clear: 'HEIÐSKÍRT',
   partly: 'LÉTTSKÝJAÐ',
   cloudy: 'SKÝJAÐ',
@@ -54,7 +54,7 @@ const SKY_LABEL: Record<Sky, string> = {
   unknown: '—',
 };
 
-const PATTERNS: Record<Sky, string[]> = {
+export const PATTERNS: Record<Sky, string[]> = {
   clear: [
     '.....X.....',
     '...........',

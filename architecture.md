@@ -31,11 +31,18 @@ browser
 │       ├── vedur.js
 │       ├── obs.js
 │       ├── forecast.js
+│       ├── landsspa.js
 │       ├── warnings.js
 │       └── textaspa.js
+│   └── data/landsspa-stations.json
 ├── web/
 │   ├── index.html
+│   ├── landid.html
 │   ├── main.ts
+│   ├── landid/          (the Landsspá page: main, data, map, timebar, detail, coast-lo)
+│   ├── public/start.js  (start-page choice, loaded by both pages)
+│   ├── public/data/coast-hi.json
+│   ├── public/data/highland.json, country.json
 │   ├── station-config.ts
 │   ├── stations.json
 │   ├── styles/main.css
@@ -47,6 +54,9 @@ browser
 │       ├── moon.ts
 │       └── placeholder.ts
 ├── scripts/
+│   ├── build-landsspa-stations.mjs
+│   ├── build-coastline.mjs
+│   ├── build-map-layers.mjs
 │   └── deploy-traefikvm.sh
 ├── Dockerfile
 └── docker-compose.yml
@@ -65,7 +75,9 @@ browser
 | `/api/stations` | all active weather stations, compact, for the name autocomplete (`api.vedur.is/weather/stations?region_id=…`) | 24 h |
 | `/api/station-info?id=ID` | station name and coordinates (`api.vedur.is/weather/stations/{id}`) | 24 h |
 | `/api/health` | liveness probe | none |
+| `/api/landsspa?ids=1,3471,…` | forecasts for the Landsspá stations (fixed list in `server/data/landsspa-stations.json`; `ids` only filters it, empty means the overview stations), one upstream call for all | 30 min (3 min after a failure) |
 | `/stodvar` (HTML, not under `/api`) | full list of active weather stations | 24 h |
+| `/landid` (HTML) | the Landsspá page (`dist/landid.html`) | none |
 
 Notes:
 
@@ -108,9 +120,26 @@ interface Panel {
 - `moon.ts` renders the moon phase locally using `suncalc`
 - `placeholder.ts` fills the empty `tides`, `quakes`, and `traffic` slots
 
+## Landsspá page (`/landid`)
+
+A second Vite page (`web/landid.html`, entry `web/landid/main.ts`) with the nationwide station forecast map, in the spirit of the old vedur.is "Staðaspár" map.
+
+- **Stations.** `server/data/landsspa-stations.json` holds every station the page can show. `scripts/build-landsspa-stations.mjs` builds it: the 25 stations of the old vedur.is overview map (in label-placement order), the 11 capital-area stations of the KORT panel, and every other active Veðurstofan station that xmlweather has a forecast for. The server and the page both read this file. Re-run the script to refresh it.
+- **Regions.** Seven views, defined in `web/landid/data.ts`: the whole country (overview stations only), the capital area (its own coastline and projection from `metro-shape.ts`), and five bounding boxes (Suðurnes, SV, NV, NA, SA) plus the highlands. Zoomed views show every catalogue station in the box; labels that would overlap are hidden.
+- **Data.** One `/api/landsspa` call per region. The server fetches all catalogue stations from xmlweather in one cached call (with `params=F;D;T;W;R`) and returns the requested subset on one shared time axis. Weather words are sent once in a `weather` list and referenced by index.
+- **Coastline.** OpenStreetMap `natural=coastline`, built by `scripts/build-coastline.mjs` in the projection of `iceland-shape.ts`. Two detail levels: `web/landid/coast-lo.ts` (bundled, whole country) and `web/public/data/coast-hi.json` (about 200 kB, 77 kB gzipped, fetched only when a zoomed region opens). Paths are integer relative moves, drawn with `scale(1/q)`.
+- **Glaciers, lakes and crossings.** The whole-country and Hálendið views also draw glaciers, large lakes and reservoirs, and the two crossings (Kjalvegur and Sprengisandsleið). `scripts/build-map-layers.mjs` builds them from OpenStreetMap at two detail levels: `web/public/data/country.json` (about 23 kB, only glaciers over 5 km² and lakes over 8 km²) and `highland.json` (about 58 kB). A region picks one with `layers`; the file is fetched only when that view opens. Each glacier and lake is its own path, drawn as a wide outline under a fill, because OSM maps the large glaciers as overlapping outlet glaciers. Landmark names are shown on Hálendið only: `HIGHLAND_LABELS` in `web/landid/data.ts`, placed in list order after the station readouts and hidden where they would cover one.
+- **Layout.** On screens 1100 px or wider the Fjarriti (hour-by-hour list) sits under the region buttons; on narrower screens the regions go above the map and the Fjarriti moves under the station panel, in up to three columns.
+- **Same parts as the dashboard.** The page loads `main.css` and `version-switch.css` and uses the dashboard's markup for the header (nameplate, sundial, station, clock), the tab strip (Landsspá tab, the saved station tabs as links back to `/`), panel shells and titles, status lamps and the footer. `landid.css` only adds the page's own parts and the light theme. Do not restyle the shared parts there beyond the light-theme overrides.
+- **Theme.** Light (taupe) by default, dark on the switch in the tab strip. Dark is the dashboard's look unchanged. Light sets `--bg-h/s/l` (the dashboard derives every metal shade from these) and a few label and key colours; screens and panel titles stay dark glass in both themes. Stored in `localStorage['vedurstod:landid-theme']`; an inline script applies it before the page draws.
+- **Start page.** `web/public/start.js` runs first on both pages. `localStorage['vedurstod:start']` (`landid` or `stod`) is set once: new visitors get `landid`, anyone with saved tabs or a saved station gets `stod`. The switch on the Landsspá page changes it. Only the first page load of a tab's session follows it (`sessionStorage['vedurstod:entered']`), so links between the pages do not bounce.
+- **Mínar stöðvar button.** Adds the selected station as a dashboard tab (or activates it if present; replaces the active tab when all 6 are used) and opens `/`.
+
 ## Non-obvious details
 
 - vedur.is observation decimals use Icelandic commas; `server/sources/vedur.js` normalizes them before parsing
+- the xmlweather forecast only includes precipitation (`R`, mm since the previous step) when `params` asks for it; `forecast.js` and `landsspa.js` request `F;D;T;W;R`
+- the server gzips JSON and text responses of 1 kB or more when the client accepts gzip
 - wind directions are Icelandic 16-point cardinals, not degrees
 - warnings come from the CAP API (`/cap/v1/capbroker/active/detailed/all`, 204 when nothing is active), are filtered to category `Met`, and are matched to the station by point-in-polygon
 - the `api.vedur.is` clients pin an `x-vi-api-version` header so a new API version cannot change the response shape under us
