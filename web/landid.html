@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="is" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#c4b79e" />
+    <title>Landsspá · Veðurstöð Turbo</title>
+    <meta name="description" content="Staðaspá fyrir allt landið: hiti, vindur og veður á korti, klukkustund fyrir klukkustund." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Veðurstöð Turbo" />
+    <meta property="og:title" content="Landsspá · Veðurstöð Turbo" />
+    <meta property="og:description" content="Staðaspá fyrir allt landið: hiti, vindur og veður á korti, klukkustund fyrir klukkustund." />
+    <meta property="og:url" content="https://vedur.benediktorri.is/landid" />
+    <meta property="og:locale" content="is_IS" />
+    <meta property="og:image" content="https://vedur.benediktorri.is/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://vedur.benediktorri.is/og-image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Sixtyfour:BLED,SCAN@0..100,-53..100&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script src="/start.js"></script>
+    <script>
+      // Put the saved theme in place before the page draws.
+      try {
+        if (localStorage.getItem('vedurstod:landid-theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1614');
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="landid" class="console lp"></div>
+    <noscript>Landsspáin þarf JavaScript.</noscript>
+    <script type="module" src="./landid/main.ts"></script>
+  </body>
+</html>

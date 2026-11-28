@@ -11,6 +11,8 @@ async function load(stationId) {
     lang: 'is',
     view: 'xml',
     ids: String(stationId),
+    // R (precipitation) is only sent when asked for.
+    params: 'F;D;T;W;R',
   });
 
   const stations = data?.forecasts?.station ?? [];

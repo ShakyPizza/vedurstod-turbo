@@ -6,4 +6,10 @@
     <priority>1.0</priority>
     <lastmod>2026-04-14</lastmod>
   </url>
+  <url>
+    <loc>https://vedur.benediktorri.is/landid</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-11-27</lastmod>
+  </url>
 </urlset>

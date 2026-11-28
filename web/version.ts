@@ -1,15 +1,15 @@
 // Version selector: the footer version tag opens a small rotary switch
-// that swaps between the current skin (1.0) and the previous one (0.8).
+// that swaps between the current skin (1.1) and the previous one (0.8).
 // Only the look changes; data, panels and layout stay the same.
 
 import legacyCss from './styles/legacy-0.8.css?inline';
 import switchCss from './styles/version-switch.css?inline';
 
-export type Version = '0.8' | '1.0';
+export type Version = '0.8' | '1.1';
 
 const STORE_KEY = 'vedurstod:version';
-const VERSIONS: Version[] = ['0.8', '1.0'];
-const LATEST: Version = '1.0';
+const VERSIONS: Version[] = ['0.8', '1.1'];
+const LATEST: Version = '1.1';
 const NS = 'http://www.w3.org/2000/svg';
 const OSWALD_HREF = 'https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap';
 
@@ -26,7 +26,7 @@ const LEGACY_COMPAT = `
 function stored(): Version {
   try {
     const v = localStorage.getItem(STORE_KEY);
-    if (v === '0.8' || v === '1.0') return v;
+    if (v === '0.8' || v === '1.1') return v;
   } catch {
     // Storage blocked: use the latest version.
   }
@@ -42,7 +42,7 @@ function remember(v: Version) {
   }
 }
 
-// The 1.0 stylesheet is the page's own <link>. Fonts come from Google.
+// The 1.1 stylesheet is the page's own <link>. Fonts come from Google.
 function skinLinks(): HTMLLinkElement[] {
   return Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).filter(
     (l) => !l.href.includes('fonts.googleapis.com'),
@@ -180,7 +180,7 @@ export function mountVersionSwitch() {
   knob.addEventListener('click', (ev) => {
     // Clicks on a position label pick that one; the knob itself flips.
     if ((ev.target as Element).classList.contains('vswitch__pos')) return;
-    pick(current === '0.8' ? '1.0' : '0.8');
+    pick(current === '0.8' ? '1.1' : '0.8');
   });
   sw.render(current);
 

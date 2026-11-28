@@ -2101,6 +2101,31 @@ body.panel-drag-active * {
   transition: color 0.15s, background 0.15s;
 }
 
+/* Link to the Landsspá page: a tab that leads to another page, set apart
+   from the station tabs by a gap and a dashed edge. */
+.tabstrip__page-link {
+  flex: none;
+  margin-right: 10px;
+  align-self: flex-end;
+  text-decoration: none;
+  color: var(--label);
+  border-style: dashed;
+  border-color: #3d342d;
+}
+
+.tabstrip__page-link::before {
+  content: '';
+  width: 10px;
+  height: 7px;
+  border: 1px solid currentColor;
+  border-radius: 40% 60% 45% 55%;
+  opacity: 0.8;
+}
+
+.tabstrip__page-link:hover {
+  color: var(--crt-amber);
+}
+
 .tabstrip__tab-label {
   white-space: nowrap;
   overflow: hidden;

@@ -2,9 +2,11 @@ import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, resolve, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 import { getObservation, getObservations } from './sources/obs.js';
 import { getForecast } from './sources/forecast.js';
+import { getLandsspa } from './sources/landsspa.js';
 import { getWarnings } from './sources/warnings.js';
 import { getTextaspa } from './sources/textaspa.js';
 import { getQuakes } from './sources/quakes.js';
@@ -34,14 +36,28 @@ const MIME = {
   '.webp': 'image/webp',
 };
 
+// Text types worth compressing. Small bodies are sent as they are.
+const COMPRESSIBLE = /^(text\/|application\/(json|javascript|xml)|image\/svg)/;
+const GZIP_MIN_BYTES = 1024;
+
+/** Send `buf`, gzipped when the client accepts it and it is worth it. */
+function sendBody(res, status, headers, buf) {
+  const accepts = /\bgzip\b/.test(String(res.req?.headers['accept-encoding'] ?? ''));
+  if (accepts && buf.length >= GZIP_MIN_BYTES && COMPRESSIBLE.test(headers['content-type'] ?? '')) {
+    buf = gzipSync(buf);
+    headers = { ...headers, 'content-encoding': 'gzip', vary: 'accept-encoding' };
+  }
+  res.writeHead(status, { ...headers, 'content-length': buf.length });
+  res.end(buf);
+}
+
 function sendJson(res, status, body) {
-  const payload = JSON.stringify(body);
-  res.writeHead(status, {
-    'content-type': 'application/json; charset=utf-8',
-    'content-length': Buffer.byteLength(payload),
-    'cache-control': 'no-store',
-  });
-  res.end(payload);
+  sendBody(
+    res,
+    status,
+    { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    Buffer.from(JSON.stringify(body)),
+  );
 }
 
 async function sendStationList(res) {
@@ -71,19 +87,24 @@ async function sendStatic(res, urlPath) {
     const info = await stat(filePath);
     if (info.isDirectory()) filePath = join(filePath, 'index.html');
   } catch {
-    filePath = join(DIST_DIR, 'index.html');
+    // Pages without an extension: /landid -> landid.html.
+    const page = join(DIST_DIR, `${safePath.replace(/\/$/, '')}.html`);
+    filePath = safePath && !extname(safePath) && (await stat(page).catch(() => null))
+      ? page
+      : join(DIST_DIR, 'index.html');
   }
   try {
     const buf = await readFile(filePath);
     const mime = MIME[extname(filePath)] ?? 'application/octet-stream';
-    res.writeHead(200, {
-      'content-type': mime,
-      'content-length': buf.length,
-      'cache-control': filePath.endsWith('index.html')
-        ? 'no-cache'
-        : 'public, max-age=3600',
-    });
-    res.end(buf);
+    sendBody(
+      res,
+      200,
+      {
+        'content-type': mime,
+        'cache-control': filePath.endsWith('.html') ? 'no-cache' : 'public, max-age=3600',
+      },
+      buf,
+    );
   } catch {
     res.writeHead(404, { 'content-type': 'text/plain' });
     res.end('not found');
@@ -108,6 +129,14 @@ async function handleApi(req, res, pathname, query) {
       }
       case '/api/forecast':
         return sendJson(res, 200, await getForecast(forecastStationId));
+      case '/api/landsspa': {
+        const ids = String(query.get('ids') ?? '')
+          .split(/[;,]/)
+          .filter((v) => v.trim() !== '')
+          .map((v) => Number(v))
+          .filter((n) => Number.isInteger(n) && n > 0);
+        return sendJson(res, 200, await getLandsspa(ids));
+      }
       case '/api/warnings':
         return sendJson(res, 200, await getWarnings(lat, lon));
       case '/api/textaspa':

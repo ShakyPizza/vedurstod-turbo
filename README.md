@@ -1,6 +1,6 @@
 # Veðurstöð Turbo
 
-A weather console for Icelandic automatic weather stations, built to look like a 1960s–70s industrial control panel. Version 1.0 is a phosphor console: amber and green phosphor outlines, engraved Routed Gothic lettering, a Bakelite cabinet and pixel-font readouts.
+A weather console for Icelandic automatic weather stations, built to look like a 1960s–70s industrial control panel. Since version 1.0 it is a phosphor console: amber and green phosphor outlines, engraved Routed Gothic lettering, a Bakelite cabinet and pixel-font readouts.
 
 The default station is **Seltjarnarnes Suðurnes** (`1471`). You can pick any station from the browser. All labels and weather text are in Icelandic. Data comes from [Veðurstofa Íslands](https://www.vedur.is).
 
@@ -18,6 +18,12 @@ The default station is **Seltjarnarnes Suðurnes** (`1471`). You can pick any st
 | **SJÁVARFÖLL** | Next high and low tides. This is an astronomical estimate from the moon's transit (about ±15–30 min), because Veðurstofan has no tide API. |
 | **UMFERÐ** | Placeholder. Not connected yet. |
 
+## Landsspá
+
+`/landid` is a second page: a forecast map for the whole country, in the spirit of the old vedur.is "Staðaspár" map that Veðurstofan retired in 2026. It shows the same 25 overview stations, plus seven regions (the whole country, the capital area, Suðurnes, the four corners and the highlands) with more stations each. Step through the forecast hour by hour (3 and 6 hours further out), press **Spila** to play it, or drag the time tape. Click a station for its latest observation, a card per day with the day's rain, a chart of the whole forecast, and the **Fjarriti**, an hour-by-hour list. The page is light (taupe) by default, with a dark switch in the top corner.
+
+New visitors open on the Landsspá; anyone who already has stations saved keeps their dashboard. **Upphafssíða** on the Landsspá page changes this.
+
 The header has a **sundial**: a compass seen from above. A lit sector shows today's sun path from sunrise to sunset, and the gnomon's shadow falls opposite the sun. It handles midnight sun and polar night.
 
 ## Using the console
@@ -25,7 +31,7 @@ The header has a **sundial**: a compass seen from above. A lit sector shows toda
 - **Stations and tabs.** Click **STÖÐ** in the header to set the station. Pick one of the 38 main and capital-area stations in the list (`web/stations.json`; the order is deliberate), or start typing a station name in the **Nafn** field and pick from the suggestions. You can also type a station number; the name and coordinates fill in automatically. All stations are listed at `/stodvar`. Use **+** in the tab strip to add up to 6 station tabs.
 - **Presets.** Export your tabs to a `.json` file and import them on another device with the tab-strip buttons.
 - **Layout.** Click the lock in the tab strip to unlock the layout. Then drag panels to reorder them, resize them from the corner, or minimise them. The reset button restores the default layout.
-- **Version switch.** Click the version tag in the footer (`v1.0`) to open a rotary switch. Turn it to `0.8` to get the previous skin. Only the look changes; data and layout stay the same.
+- **Version switch.** Click the version tag in the footer (`v1.1`) to open a rotary switch. Turn it to `0.8` to get the previous skin. Only the look changes; data and layout stay the same.
 
 All settings are kept in the browser's `localStorage`. The server has no per-user state. Every API call carries the station id and coordinates, and the cache is keyed on them, so different clients can show different stations.
 
@@ -43,6 +49,7 @@ All settings are kept in the browser's `localStorage`. The server has no per-use
 | `/api/obs?station=ID` | Current observations for one station |
 | `/api/obs-multi?ids=…` | Temperature and wind for the map stations (one upstream call; the list is fixed on the server) |
 | `/api/forecast?station=ID` | Station forecast |
+| `/api/landsspa?ids=…` | Forecasts for the Landsspá stations (one upstream call; the list is fixed on the server) |
 | `/api/warnings?lat=…&lon=…` | Active warnings near a point |
 | `/api/textaspa` | Text forecast |
 | `/api/quakes` | Recent earthquakes |
@@ -50,6 +57,7 @@ All settings are kept in the browser's `localStorage`. The server has no per-use
 | `/api/station-info?id=ID` | Station name and coordinates, from the IMO Weather API |
 | `/api/health` | Liveness probe |
 | `/stodvar` | HTML page: all active weather stations with numbers, searchable (from the IMO Weather API, cached 24 h) |
+| `/landid` | The Landsspá page |
 
 See [`architecture.md`](./architecture.md) for cache times and internals.
 
@@ -93,6 +101,16 @@ Important:
 4. Register it in the `PANELS` map in `web/main.ts`.
 
 ## Changelog
+
+### 1.1 (November 2026)
+
+- New **Landsspá** page (`/landid`): a forecast map for the whole country, in the spirit of the retired vedur.is "Staðaspár" map. The same 25 overview stations, seven regions with more stations each, a time tape with step and play, a station panel with day cards, daily rain and a chart, and the **Fjarriti** hour-by-hour list.
+- Detailed OpenStreetMap coastline for the zoomed regions; glaciers, lakes, the Kjölur and Sprengisandur crossings and landmark names on the Hálendið view.
+- Light (taupe) and dark themes on the Landsspá page.
+- Start page: new visitors open on the Landsspá, existing users keep their dashboard; **Upphafssíða** switches.
+- **Landsspá** tab in the dashboard tab strip.
+- The station forecast now includes precipitation, so the SPÁ panel's heavy-rain symbol can show.
+- Server: `/api/landsspa`, and gzip for JSON and text responses.
 
 ### 1.0 (November 2026)
 

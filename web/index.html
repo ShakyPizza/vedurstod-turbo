@@ -26,6 +26,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles/main.css" />
+    <script src="/start.js"></script>
     <script>
       // Hide the page until web/version.ts puts the 0.8 skin in place.
       try {
@@ -61,6 +62,7 @@
         </div>
       </header>
       <nav class="tabstrip" id="tabstrip" aria-label="Veðurstöðvar">
+        <a class="tabstrip__tab tabstrip__page-link" href="/landid" title="Staðaspá fyrir allt landið">Landsspá</a>
         <div class="tabstrip__tabs" id="tabstrip-tabs" role="tablist"></div>
         <button type="button" class="tabstrip__add" id="tabstrip-add" title="Bæta við flipa" aria-label="Bæta við flipa"></button>
         <div class="tabstrip__sep" aria-hidden="true"></div>
@@ -88,7 +90,7 @@
         <span class="console__footer-slug console__footer-right">
           <span class="console__footer-credit">Hannað af <a href="https://x.com/kjassiturbo" target="_blank" rel="noopener noreferrer" class="console__footer-link">Kjartani Magnússyni</a> og Benedikt Orra Péturssyni</span>
           <span class="console__footer-sep" aria-hidden="true">·</span>
-          <button type="button" class="console__footer-slug" id="build-slug" title="Velja útgáfu" aria-haspopup="dialog" aria-expanded="false">v1.0</button>
+          <button type="button" class="console__footer-slug" id="build-slug" title="Velja útgáfu" aria-haspopup="dialog" aria-expanded="false">v1.1</button>
         </span>
       </footer>
     </div>

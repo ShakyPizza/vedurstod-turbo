@@ -27,7 +27,8 @@ npm run preview      # Vite preview of built dist/
 - `web/` is Vite + TypeScript with imperative DOM/SVG rendering
 - each panel owns its own fetch and render logic
 - `server/cache.js` provides TTL caching with single-flight deduplication
-- the implemented API surface is `/api/obs`, `/api/forecast`, `/api/warnings`, `/api/textaspa`, and `/api/health`
+- the implemented API surface is `/api/obs`, `/api/obs-multi`, `/api/forecast`, `/api/landsspa`, `/api/warnings`, `/api/textaspa`, `/api/quakes`, `/api/stations`, `/api/station-info`, and `/api/health`
+- there are two pages: the dashboard (`web/index.html`, `/`) and the Landsspá map (`web/landid.html`, `/landid`); see "Landsspá page" in `architecture.md`
 
 ## Key details
 
@@ -37,6 +38,8 @@ npm run preview      # Vite preview of built dist/
 - **Warnings** (`server/sources/warnings.js`): CAP API `active/detailed/all` (204 = none active), filtered to category `Met`, then a ray-casting point-in-polygon test against station coords.
 - **Text forecast**: `server/sources/textaspa.js` is active and the output is rendered inside `web/panels/obs.ts`.
 - **Moon terminator** (`web/panels/moon.ts`): `moonLitPath(R, k, phase)` computes SVG arc path for the illuminated region. Waxing/waning and crescent/gibbous determine arc sweep flags.
+- **Landsspá** (`/landid`): station list in `server/data/landsspa-stations.json` (rebuild with `scripts/build-landsspa-stations.mjs`), coastline from `scripts/build-coastline.mjs`, Hálendið glaciers, lakes and roads from `scripts/build-highland.mjs`. The generated files are checked in; do not edit them by hand. `web/public/start.js` decides which page opens first.
+- **Forecast precipitation**: xmlweather only sends `R` when `params` asks for it (`F;D;T;W;R`).
 - **Station selection**: `web/stations.json` is a short curated dropdown list whose order is deliberate; do not sort or regroup it (edit `CURATED` in `scripts/build-stations.mjs`, then run it). Other stations are found by typing a name (autocomplete in `web/station-search.ts`, fed by `/api/stations`) or added by number; `/stodvar` (`server/pages/stodvar.js`) lists them all. The dialog fields remain editable for custom stations.
 
 ## Adding a new data stream (tides, earthquakes, traffic)

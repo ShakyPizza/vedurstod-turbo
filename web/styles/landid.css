@@ -1,0 +1,1191 @@
+/* Landsspá (/landid). Loaded after main.css: the header, tab strip, panel
+   shells, titles, lamps and footer are the dashboard's own. This file adds
+   the page's own parts (map, time tape, station cards, Fjarriti) and the
+   light theme.
+
+   Dark (data-theme="dark") is the dashboard's look, unchanged.
+   Light (the default here) is the same console in taupe enamel: the
+   dashboard's metal colours are all derived from --bg-h/s/l, so changing
+   those three re-colours the cabinet and panels. Screens, titles and
+   readouts stay dark glass with amber light in both themes. */
+
+/* ---------- page tokens ---------- */
+
+:root,
+:root[data-theme='light'] {
+  --lp-edge: #8c7f69;
+  --lp-ink: #241e17;
+  --lp-ink-dim: #5e5444;
+  --lp-key: linear-gradient(180deg, #e4dac6 0%, #cfc3ab 100%);
+  --lp-key-hover: linear-gradient(180deg, #ece3d1 0%, #d8cdb7 100%);
+  --lp-key-edge: #7f725d;
+  --lp-sea: #a3aaa1;
+  --lp-sea-line: rgba(30, 40, 36, 0.1);
+  --lp-land: #ddd2bb;
+  --lp-coast: #3a332a;
+  --lp-grat: rgba(36, 30, 23, 0.16);
+  --lp-grat-label: rgba(36, 30, 23, 0.55);
+  --lp-paper: #e3dac6;
+  --lp-paper-ink: #241e17;
+  --lp-warm: #a8301b;
+  --lp-cold: #1d5aa0;
+  --lp-rain: rgba(29, 90, 160, 0.38);
+  --lp-grid: rgba(70, 110, 80, 0.2);
+  --lp-grid-major: rgba(70, 110, 80, 0.42);
+  --lp-pin: #241e17;
+  --lp-pin-ring: #ddd2bb;
+  --lp-glow: none;
+  --lp-accent: #c94a16;
+  --lp-glacier: #f4f1ea;
+  --lp-glacier-line: #8a9ba3;
+  --lp-lake-line: #55666c;
+  --lp-road: #7a4a22;
+  --lp-water-label: #3f5a66;
+  --lp-halo: #ddd2bb;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --lp-edge: #2a231e;
+  --lp-ink: var(--label);
+  --lp-ink-dim: var(--label-dim);
+  --lp-sea: #070302;
+  --lp-sea-line: rgba(154, 216, 255, 0.06);
+  --lp-paper: #0d0906;
+  --lp-land: rgba(235, 120, 15, 0.07);
+  --lp-coast: var(--crt-amber);
+  --lp-grat: rgba(114, 255, 134, 0.13);
+  --lp-grat-label: rgba(114, 255, 134, 0.55);
+  --lp-paper-ink: var(--crt-amber);
+  --lp-warm: var(--crt-amber);
+  --lp-cold: var(--frost);
+  --lp-rain: rgba(154, 216, 255, 0.28);
+  --lp-grid: rgba(114, 255, 134, 0.08);
+  --lp-grid-major: rgba(114, 255, 134, 0.2);
+  --lp-pin: var(--crt-green);
+  --lp-pin-ring: #062b0c;
+  --lp-glow: inline;
+  --lp-accent: var(--crt-amber);
+  --lp-glacier: #0d1418;
+  --lp-glacier-line: rgba(154, 216, 255, 0.5);
+  --lp-lake-line: rgba(154, 216, 255, 0.4);
+  --lp-road: rgba(114, 255, 134, 0.6);
+  --lp-water-label: rgba(154, 216, 255, 0.75);
+  --lp-halo: #070302;
+  color-scheme: dark;
+}
+
+/* ---------- light theme: the dashboard's parts in taupe ---------- */
+
+:root[data-theme='light'] {
+  --bg-h: 39;
+  --bg-s: 22%;
+  --bg-l: 69%;
+  --label: #241e17;
+  --label-dim: #5e5444;
+  --bezel-hi: rgba(255, 250, 238, 0.55);
+  --bezel-lo: #8c7f69;
+  --lamp-off: #6d5f4b;
+}
+
+:root[data-theme='light'] .console {
+  box-shadow:
+    0 0 0 1px #7f725d,
+    inset 0 1px 0 rgba(255, 250, 238, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 24px 60px rgba(60, 45, 25, 0.3);
+}
+
+:root[data-theme='light'] .panel {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 238, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 1px 0 rgba(0, 0, 0, 0.15),
+    0 6px 14px rgba(60, 45, 25, 0.18);
+}
+
+:root[data-theme='light'] .panel__header {
+  box-shadow: 0 1px 0 rgba(255, 250, 238, 0.5);
+}
+
+:root[data-theme='light'] .panel__footer {
+  box-shadow: 0 -1px 0 rgba(255, 250, 238, 0.5);
+}
+
+/* Titles stay lit legend boxes on dark glass. */
+:root[data-theme='light'] .panel__title {
+  background: #140c05;
+}
+
+:root[data-theme='light'] .console__brand-line--big {
+  color: var(--label);
+  text-shadow:
+    0 1px 0 rgba(255, 250, 238, 0.6),
+    0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Amber digits printed on enamel need more contrast than on glass. */
+:root[data-theme='light'] .console__meta-value,
+:root[data-theme='light'] .panel__footer-value {
+  color: #8a4500;
+  text-shadow: none;
+}
+
+/* The sundial face is dark glass: keep its compass letters light. */
+:root[data-theme='light'] .sundial__dir {
+  fill: #d6c7a9;
+}
+
+:root[data-theme='light'] .tabstrip__tab,
+:root[data-theme='light'] .tabstrip__tool {
+  color: var(--label);
+  background: var(--lp-key);
+  border: 1px solid var(--lp-edge);
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 rgba(255, 250, 238, 0.6);
+  text-shadow: none;
+}
+
+:root[data-theme='light'] .tabstrip__tab:hover,
+:root[data-theme='light'] .tabstrip__tool:hover {
+  color: #000;
+  background: var(--lp-key-hover);
+  text-shadow: none;
+}
+
+:root[data-theme='light'] .tabstrip__tab--active,
+:root[data-theme='light'] .tabstrip__tab--active:hover {
+  color: #140900;
+  background: var(--crt-amber);
+  border-color: var(--crt-amber);
+  box-shadow:
+    0 0 10px rgba(245, 140, 20, 0.45),
+    inset 0 0 6px rgba(255, 240, 200, 0.6);
+}
+
+:root[data-theme='light'] .tabstrip__tab-index {
+  color: var(--label-dim);
+}
+
+:root[data-theme='light'] .tabstrip__sep {
+  background: var(--lp-edge);
+  border-right-color: rgba(255, 250, 238, 0.5);
+}
+
+/* ---------- tab strip tools with text ---------- */
+
+.tabstrip__tool.lp-tool {
+  width: auto;
+  padding: 0 10px;
+  gap: 8px;
+  font-family: var(--font-legend);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.lp-theme__track {
+  width: 26px;
+  height: 14px;
+  border-radius: 7px;
+  position: relative;
+  background: #000;
+  border: 1px solid rgba(245, 154, 28, 0.35);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.lp-theme__knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4ecdc, #a99c84);
+  transition: left 0.18s;
+}
+
+:root[data-theme='dark'] .lp-theme__knob {
+  left: 13px;
+  background: radial-gradient(circle at 35% 30%, #ffd27a, #b06a0c);
+  box-shadow: 0 0 6px rgba(245, 166, 35, 0.8);
+}
+
+/* ---------- keys: the dashboard's outlined keys, the active one lit ---------- */
+
+.lp-key {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px 6px;
+  font-family: var(--font-legend);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--crt-amber-dim);
+  background: #000;
+  border: 1px solid rgba(245, 154, 28, 0.35);
+  border-radius: var(--field-radius);
+  box-shadow: inset 0 0 8px rgba(245, 140, 20, 0.08);
+  transition: color 0.15s, background 0.15s;
+}
+
+.lp-key:hover {
+  color: var(--crt-amber);
+  background: #0a0602;
+  text-shadow: var(--amber-bloom);
+}
+
+.lp-key[aria-pressed='true'],
+.lp-key[aria-pressed='true']:hover {
+  color: #140900;
+  background: var(--crt-amber);
+  border-color: var(--crt-amber);
+  text-shadow: none;
+  box-shadow:
+    0 0 10px rgba(245, 140, 20, 0.5),
+    inset 0 0 6px rgba(255, 240, 200, 0.6);
+}
+
+.lp-key:focus-visible,
+.lp-mod:focus-visible,
+.lp-day:focus-visible,
+.lp-tape:focus-visible,
+.tabstrip__tool.lp-tool:focus-visible {
+  outline: 1px solid var(--crt-amber);
+  outline-offset: 2px;
+}
+
+:root[data-theme='light'] .lp-key {
+  color: var(--label);
+  background: var(--lp-key);
+  border-color: var(--lp-key-edge);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 250, 238, 0.6);
+}
+
+:root[data-theme='light'] .lp-key:hover {
+  color: #000;
+  background: var(--lp-key-hover);
+  text-shadow: none;
+}
+
+:root[data-theme='light'] .lp-key[aria-pressed='true'],
+:root[data-theme='light'] .lp-key[aria-pressed='true']:hover {
+  color: #140900;
+  background: var(--crt-amber);
+  border-color: #a8600c;
+}
+
+/* ---------- shared bits ---------- */
+
+.lp-sp {
+  margin-left: auto;
+}
+
+.lp-legend {
+  font-family: var(--font-legend);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--label-dim);
+}
+
+/* Screens: the dashboard's backlit glass. */
+.lp-glass {
+  background: var(--screen-lit-bg);
+  border: 1px solid var(--amber-line);
+  border-radius: var(--field-radius);
+  box-shadow: var(--screen-lit-shadow);
+  color: var(--crt-amber);
+}
+
+.lp-read {
+  font-family: 'VT323', monospace;
+  color: var(--crt-amber);
+  text-shadow: var(--amber-bloom);
+  line-height: 1;
+}
+
+.lp-frost {
+  color: var(--frost) !important;
+  text-shadow: 0 0 6px rgba(120, 200, 255, 0.6) !important;
+}
+
+.lp-warm {
+  color: var(--lp-warm);
+}
+
+.lp-cold {
+  color: var(--lp-cold);
+}
+
+/* dot-matrix symbol (the SPÁ panel's) */
+.lp-dm {
+  display: block;
+}
+.lp-dm__off {
+  fill: #2a1a0d;
+}
+.lp-dm__on {
+  fill: #c9ffc0;
+}
+.lp-dm--clear .lp-dm__on,
+.lp-dm--partly .lp-dm__on,
+.lp-dm--thunder .lp-dm__on {
+  fill: #f5e08a;
+}
+.lp-dm--snow .lp-dm__on,
+.lp-dm--sleet .lp-dm__on {
+  fill: #d9f1ff;
+}
+
+.lp-arw {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  vertical-align: -1px;
+  fill: currentColor;
+}
+
+.lp-calm {
+  opacity: 0.6;
+}
+
+/* ---------- layout ---------- */
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.lp-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.lp-regions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lp-regions .lp-key {
+  width: 100%;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  padding: 8px 10px 7px;
+}
+
+/* Fjarriti: fills the rest of the rail on wide screens. */
+.lp-tty-hi {
+  flex: 1;
+  position: relative;
+  min-height: 300px;
+}
+
+.lp-tty-hi .lp-tty-panel {
+  position: absolute;
+  inset: 0;
+}
+
+.lp-tty-hi .lp-tty {
+  flex: 1;
+  min-height: 0;
+  font-size: 11px;
+  padding: 12px 18px;
+}
+
+.lp-tty-low {
+  margin-top: 16px;
+}
+
+.lp-tty-low:empty {
+  display: none;
+}
+
+.lp-tty-low .lp-tty {
+  max-height: 460px;
+}
+
+.lp-tty-low .lp-tty--cols {
+  max-height: none;
+  column-gap: 32px;
+  column-rule: 1px dashed var(--lp-edge);
+}
+
+.lp-mappanel .panel__header {
+  flex-wrap: wrap;
+}
+
+/* The dashboard pushes a panel's status to the right edge. Here a header
+   can have a second status (the valid time, the station number) that
+   belongs next to the title. */
+.lp-tight > .panel__title {
+  margin-right: 0;
+}
+.lp-tight > .panel__status:not(.lp-sp) {
+  margin-left: 6px;
+}
+
+/* ---------- map ---------- */
+
+.lp-map {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--field-radius);
+  background: var(--lp-sea);
+  border: 1px solid var(--lp-edge);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme='dark'] .lp-map {
+  border-color: var(--amber-line);
+  box-shadow: var(--screen-lit-shadow);
+}
+
+.lp-map__svg,
+.lp-map__svg > svg,
+.lp-map__mods {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lp-sea {
+  fill: var(--lp-sea);
+}
+.lp-sea__line {
+  stroke: var(--lp-sea-line);
+}
+.lp-land {
+  fill: var(--lp-land);
+  stroke: var(--lp-coast);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.lp-land--fine {
+  stroke-width: 0.9;
+}
+.lp-land-glow {
+  display: var(--lp-glow);
+  fill: none;
+  stroke: rgba(245, 140, 20, 0.6);
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
+.lp-grat {
+  stroke: var(--lp-grat);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.lp-grat--minor {
+  opacity: 0.5;
+}
+.lp-grat__label {
+  fill: var(--lp-grat-label);
+  font-family: 'VT323', monospace;
+}
+
+/* Hálendið layers */
+/* Each glacier or lake is drawn twice: a wide outline first, then the fill
+   on top. Half the outline shows outside the shape; where two shapes meet,
+   the fills cover it. */
+.lp-glacier__edge path,
+.lp-lake__edge path {
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.lp-glacier__edge path {
+  stroke: var(--lp-glacier-line);
+}
+.lp-lake__edge path {
+  stroke: var(--lp-lake-line);
+}
+.lp-glacier path,
+.lp-lake path {
+  fill-rule: evenodd;
+  stroke: none;
+}
+.lp-glacier path {
+  fill: var(--lp-glacier);
+}
+.lp-lake path {
+  fill: var(--lp-sea);
+}
+.lp-road {
+  fill: none;
+  stroke: var(--lp-road);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.lp-lbl {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: var(--font-legend-narrow);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lp-ink);
+}
+.lp-lbl--left {
+  flex-direction: row-reverse;
+}
+/* A halo in the land colour keeps names readable where they cross a line. */
+.lp-lbl span {
+  text-shadow:
+    0 0 2px var(--lp-halo),
+    0 0 4px var(--lp-halo),
+    0 0 6px var(--lp-halo);
+}
+.lp-lbl--glacier,
+.lp-lbl--lake {
+  color: var(--lp-water-label);
+  letter-spacing: 0.32em;
+}
+.lp-lbl--glacier {
+  font-size: 11px;
+}
+.lp-lbl--road {
+  color: var(--lp-road);
+  letter-spacing: 0.24em;
+}
+:root[data-theme='dark'] .lp-lbl--peak,
+:root[data-theme='dark'] .lp-lbl--place {
+  color: var(--label);
+}
+.lp-lbl__mark {
+  flex: none;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid currentColor;
+}
+.lp-lbl--place .lp-lbl__mark {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  border: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.lp-pin {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--lp-pin);
+  border: 1.5px solid var(--lp-pin-ring);
+  pointer-events: none;
+}
+.lp-pin--high {
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+:root[data-theme='dark'] .lp-pin {
+  box-shadow: 0 0 5px rgba(114, 255, 134, 0.8);
+}
+
+.lp-mod {
+  position: absolute;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 0 5px;
+  padding: 3px 6px 3px 4px;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: var(--screen-lit-bg);
+  border: 1px solid var(--amber-line);
+  border-radius: var(--field-radius);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.lp-mod[hidden] {
+  display: none;
+}
+.lp-mod .lp-dm {
+  width: 24px;
+  height: 24px;
+  grid-row: span 2;
+}
+.lp-mod__t {
+  font-family: 'VT323', monospace;
+  font-size: 21px;
+  line-height: 0.85;
+  color: var(--crt-amber);
+  text-shadow: var(--amber-bloom);
+}
+.lp-mod__w {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  line-height: 0.9;
+  color: #efe1c2;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.lp-mod__w .lp-arw {
+  width: 10px;
+  height: 10px;
+}
+.lp-mod__n {
+  grid-column: 1 / -1;
+  font-family: var(--font-legend-narrow);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: #c9b99c;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-top: 1px;
+  display: none;
+}
+.lp-map--names .lp-mod__n {
+  display: block;
+}
+.lp-mod:hover {
+  border-color: var(--crt-amber);
+}
+/* Selected: inverted, like the dashboard's active tab. */
+.lp-mod--sel,
+.lp-mod--sel:hover {
+  background: var(--crt-amber);
+  border-color: var(--crt-amber);
+  box-shadow: 0 0 10px rgba(245, 140, 20, 0.6);
+  z-index: 1;
+}
+.lp-mod--sel .lp-mod__t,
+.lp-mod--sel .lp-mod__w,
+.lp-mod--sel .lp-mod__n {
+  color: #140900 !important;
+  text-shadow: none !important;
+}
+.lp-mod--sel .lp-dm {
+  background: #140900;
+  border-radius: 2px;
+}
+.lp-map--compact .lp-mod .lp-dm {
+  width: 18px;
+  height: 18px;
+}
+.lp-map--compact .lp-mod__t {
+  font-size: 17px;
+}
+.lp-map--compact .lp-mod__w {
+  font-size: 13px;
+}
+.lp-map--tiny .lp-mod {
+  grid-template-columns: auto;
+  padding: 2px 4px;
+}
+.lp-map--tiny .lp-mod .lp-dm {
+  display: none;
+}
+.lp-map--tiny .lp-mod__t {
+  font-size: 16px;
+}
+.lp-map--tiny .lp-mod__w {
+  font-size: 12px;
+}
+
+/* ---------- time ---------- */
+
+.lp-time {
+  margin-top: 16px;
+}
+
+.lp-time__body {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.lp-counter {
+  padding: 8px 12px;
+  min-width: 168px;
+}
+.lp-counter__day {
+  font-size: 20px;
+  letter-spacing: 0.04em;
+}
+.lp-counter__time {
+  font-size: 40px;
+  line-height: 0.9;
+}
+.lp-counter__lead {
+  font-family: var(--font-legend);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--crt-amber-dim);
+  min-height: 1em;
+}
+
+.lp-keys {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lp-keys .lp-key {
+  padding: 9px 11px 8px;
+  font-size: 12px;
+}
+
+.lp-tape {
+  position: relative;
+  height: 54px;
+  user-select: none;
+  touch-action: none;
+  cursor: pointer;
+}
+.lp-tape__day {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-left: 1px solid var(--bezel-lo);
+}
+.lp-tape__day span {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  font-family: var(--font-legend);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  color: var(--label);
+}
+.lp-tape__tick {
+  position: absolute;
+  bottom: 14px;
+  width: 1px;
+  height: 7px;
+  background: var(--label-dim);
+  opacity: 0.7;
+}
+.lp-tape__tick--major {
+  height: 13px;
+  opacity: 1;
+}
+.lp-tape__hour {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: var(--label-dim);
+}
+.lp-tape__rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  height: 1px;
+  background: var(--bezel-lo);
+}
+.lp-tape__needle {
+  position: absolute;
+  top: 14px;
+  bottom: 12px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--needle);
+  box-shadow: 0 0 4px var(--needle);
+  pointer-events: none;
+  transition: left 0.12s;
+}
+.lp-tape__needle::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: -5px;
+  border: 6px solid transparent;
+  border-top: 7px solid var(--needle);
+  border-bottom: 0;
+}
+
+/* ---------- station ---------- */
+
+.lp-station {
+  margin-top: 16px;
+}
+
+.lp-station .panel__header {
+  flex-wrap: wrap;
+}
+
+.lp-det {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.lp-obs {
+  padding: 12px 14px;
+}
+.lp-obs__lead {
+  color: var(--crt-amber-dim);
+}
+.lp-obs__big {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 6px 0 8px;
+}
+.lp-obs__temp {
+  font-size: 46px;
+}
+.lp-obs__wind {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-shadow: var(--amber-bloom);
+}
+.lp-obs__wind .lp-arw {
+  width: 16px;
+  height: 16px;
+}
+.lp-obs__wind small {
+  font-size: 14px;
+}
+.lp-obs__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-legend);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #b8a78a;
+  padding: 4px 0;
+  border-top: 1px solid rgba(245, 166, 35, 0.12);
+}
+.lp-obs__row b {
+  font-family: 'VT323', monospace;
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--crt-amber);
+  letter-spacing: 0;
+  text-shadow: var(--amber-bloom);
+}
+
+.lp-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+.lp-day {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: center;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--label);
+  background: var(--screen-lit-bg);
+  border: 1px solid var(--amber-line);
+  border-radius: var(--field-radius);
+  box-shadow: var(--screen-lit-shadow);
+}
+.lp-day:hover {
+  border-color: var(--crt-amber);
+}
+.lp-day--cur,
+.lp-day--cur:hover {
+  border-color: var(--crt-amber);
+  box-shadow:
+    0 0 8px rgba(245, 140, 20, 0.5),
+    inset 0 0 8px rgba(245, 140, 20, 0.2);
+}
+:root[data-theme='light'] .lp-day {
+  background: linear-gradient(180deg, var(--metal-hi) 0%, var(--metal-lo) 100%);
+  border-color: var(--lp-edge);
+  box-shadow: inset 0 1px 0 rgba(255, 250, 238, 0.6), 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+:root[data-theme='light'] .lp-day--cur {
+  border-color: var(--crt-amber-dim);
+  box-shadow:
+    0 0 0 1px var(--crt-amber-dim),
+    0 0 8px rgba(245, 140, 20, 0.45);
+}
+.lp-day__name {
+  font-family: var(--font-legend);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+.lp-day__date,
+.lp-day__range,
+.lp-day__rain {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: var(--label-dim);
+}
+.lp-day__rain {
+  color: var(--lp-cold);
+  min-height: 1em;
+}
+.lp-day__wind {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.lp-day__sky {
+  padding: 4px;
+}
+.lp-day__sky .lp-dm {
+  width: 40px;
+  height: 40px;
+}
+.lp-day__temp {
+  font-family: 'VT323', monospace;
+  font-size: 30px;
+  line-height: 0.9;
+}
+
+.lp-chart-wrap {
+  margin-top: 12px;
+  padding: 8px 10px 4px;
+  background: var(--lp-paper);
+  border: 1px solid var(--lp-edge);
+  border-radius: var(--field-radius);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+:root[data-theme='dark'] .lp-chart-wrap {
+  background: var(--screen-lit-bg);
+  border-color: var(--amber-line);
+  box-shadow: var(--screen-lit-shadow);
+}
+.lp-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.lp-chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.lp-chart__key {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+}
+.lp-chart__key--temp {
+  background: var(--lp-warm);
+}
+.lp-chart__key--wind {
+  background: var(--lp-cold);
+}
+.lp-chart__key--rain {
+  height: 8px;
+  width: 10px;
+  background: var(--lp-rain);
+}
+.lp-chart {
+  width: 100%;
+  height: 120px;
+  display: block;
+}
+.lp-chart__g {
+  stroke: var(--lp-grid);
+  stroke-width: 1;
+}
+.lp-chart__gm {
+  stroke: var(--lp-grid-major);
+  stroke-width: 1;
+}
+.lp-chart__rain {
+  fill: var(--lp-rain);
+}
+.lp-chart__temp {
+  fill: none;
+  stroke: var(--lp-warm);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.lp-chart__wind {
+  fill: none;
+  stroke: var(--lp-cold);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 2;
+  vector-effect: non-scaling-stroke;
+}
+.lp-chart__now {
+  stroke: var(--needle);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.lp-chart text {
+  font-family: 'VT323', monospace;
+  font-size: 13px;
+  fill: var(--label-dim);
+}
+
+/* ---------- Fjarriti ---------- */
+
+.lp-tty-panel .lp-tty {
+  flex: 1;
+}
+
+.lp-tty {
+  position: relative;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 8px 14px, var(--metal-mid) 0 3px, transparent 3.6px) 0 0 / 100% 22px repeat-y,
+    radial-gradient(circle at calc(100% - 8px) 14px, var(--metal-mid) 0 3px, transparent 3.6px) 0 0 / 100% 22px repeat-y,
+    var(--lp-paper);
+  border: 1px dashed var(--lp-edge);
+  border-top: 0;
+  border-bottom: 0;
+  padding: 14px 22px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--lp-paper-ink);
+}
+:root[data-theme='dark'] .lp-tty {
+  background:
+    radial-gradient(circle at 8px 14px, var(--metal-mid) 0 3px, transparent 3.6px) 0 0 / 100% 22px repeat-y,
+    radial-gradient(circle at calc(100% - 8px) 14px, var(--metal-mid) 0 3px, transparent 3.6px) 0 0 / 100% 22px repeat-y,
+    var(--screen-lit-bg);
+  border-color: var(--amber-line);
+  text-shadow: 0 0 6px rgba(245, 140, 20, 0.35);
+}
+.lp-tty__head,
+.lp-tty__day {
+  white-space: pre;
+  break-inside: avoid;
+}
+.lp-tty__head {
+  margin-bottom: 10px;
+}
+.lp-tty__row {
+  display: block;
+  cursor: pointer;
+}
+.lp-tty__row:hover {
+  background: rgba(128, 100, 60, 0.15);
+}
+.lp-tty__row--cur,
+.lp-tty__row--cur:hover {
+  background: var(--lp-paper-ink);
+  color: var(--lp-paper);
+  text-shadow: none;
+}
+:root[data-theme='dark'] .lp-tty__row--cur {
+  color: #140900;
+}
+.lp-tty__row--cur .lp-warm,
+.lp-tty__row--cur .lp-cold {
+  color: inherit;
+}
+
+/* ---------- narrower screens ---------- */
+
+@media (max-width: 1099px) {
+  .lp-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lp-regions-panel .panel__header,
+  .lp-tty-hi {
+    display: none;
+  }
+  .lp-regions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .lp-regions .lp-key {
+    width: auto;
+  }
+}
+
+@media (max-width: 860px) {
+  .lp-time__body,
+  .lp-det {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 521px) and (max-width: 860px) {
+  .lp-obs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+    gap: 0 28px;
+  }
+  .lp-obs__lead {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .lp-obs__body {
+    display: contents;
+  }
+  .lp-obs__big {
+    grid-column: 1;
+    grid-row: 2 / span 4;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 10px 0 0;
+  }
+  .lp-obs__row {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .lp-days {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 31%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 520px) {
+  .lp-regions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-tape__needle,
+  .lp-theme__knob {
+    transition: none;
+  }
+}
